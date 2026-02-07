@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5563895306284771151
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9102812749869067035}
+  - component: {fileID: 7417817027646163335}
+  m_Layer: 0
+  m_Name: LanternTentacle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9102812749869067035
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5563895306284771151}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.2588682, y: -1.0565594, z: -4.1849422}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7417817027646163335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5563895306284771151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d96c763796f9d4b4797fca640e9d0112, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shootSpeed: 5
+  minDistTentaclesPoints: 0.1
+  tentacleHeadPrefab: {fileID: 7644811421491003815, guid: 2f8db6545f4c8b843a7c4817fc99938a, type: 3}
+  tentacleBodyPrefab: {fileID: 3380045397264743945, guid: 6124571f6727e04418ff47ddc69c5584, type: 3}
+  maxAnglePerSecond: 180
+  retractSpeed: 10
+  lengthBeforeDelete: 0.3
+  wiggleSpeed: 2
+  wiggleAmplitude: 0.1
+  wiggleFrequency: 0.2
+  endDampening: 0.1
+  smoothFactor: 50
+  root: {fileID: 0}
+  activationRange: 0.5
+  checkIntervals: 0.1

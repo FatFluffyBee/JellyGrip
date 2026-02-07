@@ -1,0 +1,60 @@
+using UnityEngine;
+
+public class MoveTentacle : Tentacle
+{
+    [SerializeField] private float grabSpeed;
+
+    private bool isGrabbing = false;
+
+    protected override void ApplyChildPhysics()
+    {
+        if(isGrabbing)
+        {
+            float targetSegmentSize = Vector3.Distance(root.position, tentacleHead.position) / ((basePoses.Count - 1) * 1f);
+            currentSegmentSize = Mathf.Lerp(currentSegmentSize, targetSegmentSize, 100f * Time.deltaTime);
+
+            if(Vector2.Distance(root.position, tentacleHead.position) < 0.5f)
+            {
+                DestroyTentacle();
+                return;
+            }
+            basePoses[0] = root.position;
+            ApplyFABRIK(tentacleHead.position, basePoses, 1, currentSegmentSize);
+        }
+    }
+
+    public override void TryExpand()
+    {     
+        if(!isGrabbing && canExpand)
+        {
+            forceExpand = true;
+        }
+    }
+
+    public override void TryRetract()
+    {
+        forceRetract = true;
+        isGrabbing = false;
+    }
+
+    public override Vector3 GetDesiredMovement()
+    {
+        if(isGrabbing)
+        {
+            Debug.Log("Getting Desired Movement");
+            return shootDir * grabSpeed;
+        }
+
+        return Vector3.zero;
+    }
+
+    public override void HandleHeadCollision(Collision2D collision)
+    {
+        if(collision.transform.CompareTag("Wall"))
+        {
+            isGrabbing = true;
+            forceExpand = false;
+            canExpand = false;
+        }
+    }
+}
