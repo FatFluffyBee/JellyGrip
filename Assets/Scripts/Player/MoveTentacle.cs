@@ -42,7 +42,9 @@ public class MoveTentacle : Tentacle
         if(isGrabbing)
         {
             Debug.Log("Getting Desired Movement");
-            return shootDir * grabSpeed;
+            Vector3 dirToRoot = tentacleHead.position - root.position;
+            dirToRoot.ToV2Dir();
+            return dirToRoot * grabSpeed;
         }
 
         return Vector3.zero;
