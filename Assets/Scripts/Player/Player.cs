@@ -20,8 +20,8 @@ public class Player : MonoBehaviour
         tentacleManager = GetComponent<TentacleManager>();
         knockback = GetComponent<Knockback>();
 
-        movement.AddMoveGiver(tentacleManager);
-        movement.AddMoveGiver(knockback);
+        movement.AddMovementSource(tentacleManager);
+        movement.RemoveMovementSource(knockback);
     }
 
     void OnCollisionEnter2D(Collision2D col)

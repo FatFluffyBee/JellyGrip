@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class Movement : MonoBehaviour
+public class Movement : MonoBehaviour, IMoveReceiver
 {
     //for test purpose only
     [SerializeField] private List<IMoveGiver> moveGivers = new List<IMoveGiver>();
@@ -50,11 +50,10 @@ public class Movement : MonoBehaviour
             currentVelocity = Vector3.MoveTowards(currentVelocity, newVelocity, Time.deltaTime * decayRate);
         }
 
-        //transform.position += currentVelocity * Time.deltaTime;
         rb.linearVelocity = currentVelocity;
     }
 
-    public void AddMoveGiver(IMoveGiver giver)
+    public void AddMovementSource(IMoveGiver giver)
     {
         if(moveGivers.Contains(giver))
             return;
@@ -62,7 +61,7 @@ public class Movement : MonoBehaviour
         moveGivers.Add(giver);
     }
 
-    public void RemoveMoveGiver(IMoveGiver giver)
+    public void RemoveMovementSource(IMoveGiver giver)
     {
         if(moveGivers.Contains(giver))
         {
