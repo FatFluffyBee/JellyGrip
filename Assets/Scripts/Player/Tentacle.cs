@@ -74,11 +74,21 @@ public abstract class Tentacle : MonoBehaviour
         //Add idle drift for head
         if(applyForces)
         {
+            Vector3 inputTotal = Vector3.zero;
             foreach(IMoveGiver e in moveGivers)
             {
                 Vector3 input = e.GetDesiredMovement().input;
-                newHeadPos += input * Time.deltaTime;
+                inputTotal += input;
             }
+
+            newHeadPos += inputTotal * Time.deltaTime;
+
+            //todo Rotate shoot dir towards input total, combien with expand one maybe?
+            float t = inputTotal.magnitude / 10f;
+            float maxStep = maxAnglePerSecond * Time.deltaTime * t;
+            float angle = Vector2.SignedAngle(shootDir, inputTotal.normalized);
+            shootDir = Quaternion.Euler(0, 0, Mathf.Clamp(angle, -maxStep, maxStep)) * shootDir;
+            shootDir.Normalize();
         }
 
         //Add force to head if expanding
@@ -95,6 +105,7 @@ public abstract class Tentacle : MonoBehaviour
             if(RetractAlongPath()) {return;}
             isRetracting = false;
         }
+
 
         basePoses[^1] = newHeadPos;
         UpdateEndTentaclePoses();

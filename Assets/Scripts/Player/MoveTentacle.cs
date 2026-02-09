@@ -37,6 +37,12 @@ public class MoveTentacle : Tentacle
         isGrabbing = false;
     }
 
+    protected override void ForceRetractTentacle()
+    {
+        //forceRetract = true;
+        //isGrabbing = false;
+    }
+
     public override Vector3 GetDesiredMovement()
     {
         if(isGrabbing)
