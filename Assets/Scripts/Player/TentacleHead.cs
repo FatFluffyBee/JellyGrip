@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class TentacleHead : MonoBehaviour
+public class TentacleHead : MonoBehaviour, IMoveReceiver
 {
     private Tentacle owner;
 
@@ -12,5 +12,15 @@ public class TentacleHead : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         owner.HandleHeadCollision(collision);
+    }
+
+    public void AddMovementSource(IMoveGiver moveGiver)
+    {
+        owner.RegisterMoveGiver(moveGiver);
+    }
+
+    public void RemoveMovementSource(IMoveGiver moveGiver)
+    {
+        owner.UnregisterMoveGiver(moveGiver);
     }
 }
