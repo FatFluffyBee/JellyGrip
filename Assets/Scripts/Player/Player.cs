@@ -33,9 +33,9 @@ public class Player : MonoBehaviour
             knockback.Apply((Vector3)col.GetContact(0).point, knockbackForce);
         }
 
-        if(col.collider.CompareTag("Wall"))
+        /*if(col.collider.CompareTag("Wall"))
         {
             tentacleManager.RetractAllTentacles();
-        }
+        }*/
     }
 }
