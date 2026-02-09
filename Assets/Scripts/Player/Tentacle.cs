@@ -28,6 +28,7 @@ public abstract class Tentacle : MonoBehaviour
     protected bool forceExpand = false;
     protected bool isRetracting = false;
     protected bool forceRetract = false;
+    protected bool applyForces = true;
 
     protected Vector3 shootDir;
     protected List<Vector3> basePoses = new List<Vector3>();
@@ -36,6 +37,7 @@ public abstract class Tentacle : MonoBehaviour
     protected List<GameObject> segments = new List<GameObject>();
     protected Rigidbody2D tentacleHeadRb;
     protected Transform tentacleHead;
+    private List<IMoveGiver> moveGivers = new List<IMoveGiver>();
 
     protected Vector3 newHeadPos;
 
@@ -49,20 +51,67 @@ public abstract class Tentacle : MonoBehaviour
 
     public virtual void TryRetract() {}
 
+    public void RegisterMoveGiver(IMoveGiver moveGiver)
+    {
+        if(!moveGivers.Contains(moveGiver))
+        {
+            moveGivers.Add(moveGiver);
+        }
+    }
+
+    public void UnregisterMoveGiver(IMoveGiver moveGiver)
+    {
+        if(moveGivers.Contains(moveGiver))
+        {
+            moveGivers.Remove(moveGiver);
+        }
+    }
+
     private void FixedUpdate()
     {
-        if(isRetracting || forceRetract)
+        newHeadPos = tentacleHead.position;
+
+        //Add idle drift for head
+        if(applyForces)
         {
-            RetractAlongPath();
-            isRetracting = false;
+            Vector3 inputTotal = Vector3.zero;
+            foreach(IMoveGiver e in moveGivers)
+            {
+                Vector3 input = e.GetDesiredMovement().input;
+                inputTotal += input;
+            }
+
+            newHeadPos += inputTotal * Time.deltaTime;
+
+            //todo Rotate shoot dir towards input total, combien with expand one maybe?
+            float t = inputTotal.magnitude / 10f;
+            float maxStep = maxAnglePerSecond * Time.deltaTime * t;
+            float angle = Vector2.SignedAngle(shootDir, inputTotal.normalized);
+            shootDir = Quaternion.Euler(0, 0, Mathf.Clamp(angle, -maxStep, maxStep)) * shootDir;
+            shootDir.Normalize();
         }
-        else if(isExpanding || forceExpand)
+
+        //Add force to head if expanding
+        if(isExpanding || forceExpand)
         {
             Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             mousePos.z = 0;
-            Expand(mousePos);    
+            newHeadPos += GetExpandDelta(mousePos);
             isExpanding = false;
         }
+
+        if(isRetracting || forceRetract)
+        {
+            if(RetractAlongPath()) {return;}
+            isRetracting = false;
+        }
+
+
+        basePoses[^1] = newHeadPos;
+        UpdateEndTentaclePoses();
+
+        basePoses[0] = root.position;
+        UpdateStartTentaclePoses();
 
         ApplyChildPhysics();
 
@@ -72,7 +121,6 @@ public abstract class Tentacle : MonoBehaviour
 
         tentacleHeadRb.MovePosition(newHeadPos);
         tentacleHead.up = shootDir;
-        
     }
 
     protected virtual void ApplyChildPhysics()
@@ -127,26 +175,14 @@ public abstract class Tentacle : MonoBehaviour
             currentPoses[i] = Vector3.Lerp(currentPoses[i], targetPoses[i], Time.deltaTime * smoothFactor);
         }
     }
-    
-    public void Expand(Vector3 worldPos)
+
+    private void UpdateEndTentaclePoses()
     {
-        Vector3 targetDir = worldPos - basePoses[^1];
-        targetDir.z = 0;
-        targetDir.Normalize();
-
-        float maxStep = maxAnglePerSecond * Time.deltaTime;
-        float angle = Vector2.SignedAngle(shootDir, targetDir);
-        shootDir = Quaternion.Euler(0, 0, Mathf.Clamp(angle, -maxStep, maxStep)) * shootDir;
-        shootDir.Normalize();
-
-        Vector3 nextPos = basePoses[^1] + shootDir * shootSpeed * Time.deltaTime;
-        basePoses[^1] = nextPos;
-
         float remainingDist = Vector2.Distance(basePoses[^1], basePoses[^2]);
 
         while(remainingDist > minDistTentaclesPoints)
         {
-            Vector3 dir = nextPos - basePoses[^2];
+            Vector3 dir = basePoses[^1] - basePoses[^2];
             dir.ToV2Dir();
 
             Vector3 newPoint =  basePoses[^2] + dir * minDistTentaclesPoints;
@@ -159,8 +195,41 @@ public abstract class Tentacle : MonoBehaviour
 
             remainingDist = Vector2.Distance(basePoses[^1], basePoses[^2]);
         }
+    }
 
-        newHeadPos = basePoses[^1];
+    private void UpdateStartTentaclePoses()
+    {
+        float remainingDist = Vector2.Distance(basePoses[0], basePoses[1]);
+
+        while(remainingDist > minDistTentaclesPoints)
+        {
+            Vector3 dir = basePoses[0] - basePoses[1];
+            dir.ToV2Dir();
+
+            Vector3 newPoint =  basePoses[1] + dir * minDistTentaclesPoints;
+
+            AddNewSegment(newPoint, basePoses[1]);
+
+            basePoses.Insert(1, newPoint);
+            targetPoses.Insert(1, newPoint);
+            currentPoses.Insert(1, newPoint);
+
+            remainingDist = Vector2.Distance(basePoses[0], basePoses[1]);
+        }
+    }
+
+    public Vector3 GetExpandDelta(Vector3 worldPos)
+    {
+        Vector3 targetDir = worldPos - basePoses[^1];
+        targetDir.z = 0;
+        targetDir.Normalize();
+
+        float maxStep = maxAnglePerSecond * Time.deltaTime;
+        float angle = Vector2.SignedAngle(shootDir, targetDir);
+        shootDir = Quaternion.Euler(0, 0, Mathf.Clamp(angle, -maxStep, maxStep)) * shootDir;
+        shootDir.Normalize();
+
+        return shootDir * shootSpeed * Time.deltaTime;
     }
 
     private void AddNewSegment(Vector3 start, Vector3 end)
@@ -209,7 +278,8 @@ public abstract class Tentacle : MonoBehaviour
         }
     }
 
-    public void RetractAlongPath()
+    //bool return if tentacle is fully retracted and can be destroyed so we can end the main process
+    public bool RetractAlongPath()
     {       
         Vector3 currentPos;
         Vector3 nextPos;
@@ -222,7 +292,7 @@ public abstract class Tentacle : MonoBehaviour
             if(basePoses.Count < segmentBeforeDelete || segments.Count == 0)
             {
                 DestroyTentacle();
-                return;
+                return true;
             }
 
             count++;
@@ -258,6 +328,7 @@ public abstract class Tentacle : MonoBehaviour
                 shootDir = newShootDir.normalized;
             }
         }
+        return false;
     }
 
     public void CalculateWigglePoses()
@@ -291,7 +362,6 @@ public abstract class Tentacle : MonoBehaviour
         {
             Destroy(e);    
         }
-
         tentacleManager.OnCancel -= ForceRetractTentacle;
     }
 

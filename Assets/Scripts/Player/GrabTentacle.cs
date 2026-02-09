@@ -24,7 +24,7 @@ public class GrabTentacle : Tentacle
 
     public void ReleaseGrabbedObject()
     {
-        Vector3 releaseDir = tentacleHead.up;
+        Vector3 releaseDir = -tentacleHead.up;
         float releaseSpeed = isRetracting ? retractSpeed : 0f;
 
         grabbedObject?.OnGrabEnd(releaseSpeed * releaseDir);

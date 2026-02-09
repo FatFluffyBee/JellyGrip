@@ -18,7 +18,7 @@ public class MoveTentacle : Tentacle
                 DestroyTentacle();
                 return;
             }
-            basePoses[0] = root.position;
+
             ApplyFABRIK(tentacleHead.position, basePoses, 1, currentSegmentSize);
         }
     }
@@ -35,6 +35,12 @@ public class MoveTentacle : Tentacle
     {
         forceRetract = true;
         isGrabbing = false;
+    }
+
+    protected override void ForceRetractTentacle()
+    {
+        //forceRetract = true;
+        //isGrabbing = false;
     }
 
     public override Vector3 GetDesiredMovement()
@@ -55,6 +61,7 @@ public class MoveTentacle : Tentacle
         if(collision.transform.CompareTag("Wall"))
         {
             isGrabbing = true;
+            applyForces = false;
             forceExpand = false;
             canExpand = false;
         }
