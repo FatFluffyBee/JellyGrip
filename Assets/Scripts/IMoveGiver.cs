@@ -1,7 +1,8 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public interface IMoveGiver 
 {
-    public MoveInput GetDesiredMovement();
+    public List<MoveInput> GetDesiredMovement();
 }

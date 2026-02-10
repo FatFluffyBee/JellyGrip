@@ -39,7 +39,7 @@ public abstract class Tentacle : MonoBehaviour
     private List<IMoveGiver> moveGivers = new List<IMoveGiver>();
     private TentacleHead tentacleHeadHandler;
 
-    protected Vector3 newHeadPos;
+    //protected Vector3 newHeadPos;
 
     public Transform root;
     protected float currentSegmentSize; 
@@ -47,6 +47,8 @@ public abstract class Tentacle : MonoBehaviour
     public event Action OnTentacleDestroyed;
     public event Action<Tentacle> OnForceRetract;
     private float segmentBeforeDelete;
+
+    protected List<MoveInput> moveInputs = new List<MoveInput>();
 
     public virtual void TryExpand(){}
 
@@ -70,23 +72,30 @@ public abstract class Tentacle : MonoBehaviour
 
     private void FixedUpdate()
     {
-        newHeadPos = tentacleHead.position;
+        Vector3 newHeadPos = tentacleHead.position;
 
         //Add idle drift for head
         if(applyForces)
         {
-            Vector3 inputTotal = Vector3.zero;
-            foreach(IMoveGiver e in moveGivers)
+            //! dont handle input well, should have its own class
+            Vector3 velocityTotal = Vector3.zero;
+            Vector3 impulseTotal = Vector3.zero;
+            foreach(IMoveGiver list in moveGivers)
             {
-                Vector3 input = e.GetDesiredMovement().input;
-                inputTotal += input;
+                foreach(MoveInput e in list.GetDesiredMovement())
+                {
+                    if(e.moveType == MoveType.Velocity)
+                        velocityTotal += e.input;
+                    else if(e.moveType == MoveType.Impulse)
+                        impulseTotal += e.input;
+                }
             }
 
-            newHeadPos += inputTotal * Time.deltaTime;
+            newHeadPos += velocityTotal * Time.deltaTime + impulseTotal;
 
-            float t = inputTotal.magnitude / 10f;
+            float t = velocityTotal.magnitude / 10f;
             float maxStep = maxAnglePerSecond * Time.deltaTime * t;
-            float angle = Vector2.SignedAngle(shootDir, inputTotal.normalized);
+            float angle = Vector2.SignedAngle(shootDir, velocityTotal.normalized);
             shootDir = Quaternion.Euler(0, 0, Mathf.Clamp(angle, -maxStep, maxStep)) * shootDir;
             shootDir.Normalize();
         }
@@ -102,28 +111,40 @@ public abstract class Tentacle : MonoBehaviour
 
         if(isRetracting || forceRetract)
         {
-            if(RetractAlongPath()) {return;}
+            if(RetractAlongPath(newHeadPos, out Vector3 finalHeadPos))
+            {
+                Debug.Log("Deetroying tentacle");
+                DestroyTentacle();
+                return;
+            }
+            newHeadPos = finalHeadPos;
             isRetracting = false;
+
+            Vector3 newShootDir = basePoses[^1] - basePoses[^2];
+            if(newShootDir.magnitude > 0.0001f)
+            {
+                shootDir = newShootDir.normalized;
+            }
         }
-
-
-        basePoses[^1] = newHeadPos;
-        UpdateEndTentaclePoses();
-
-        basePoses[0] = root.position;
-        UpdateStartTentaclePoses();
-
-        ApplyChildPhysics();
-
-        CalculateWigglePoses();
-        UpdateCurrentPoses();
-        UpdateSegments();
 
         tentacleHeadRb.MovePosition(newHeadPos);
         tentacleHead.up = shootDir;
     }
 
-    protected virtual void ApplyChildPhysics()
+    private void LateUpdate()
+    {   
+        UpdateStartTentaclePoses();
+
+        UpdateEndTentaclePoses();
+
+        ApplyChildVisuals();
+
+        CalculateWigglePoses();
+        UpdateCurrentPoses();
+        UpdateSegments();
+    }
+
+    protected virtual void ApplyChildVisuals()
     {
         
     }
@@ -156,9 +177,10 @@ public abstract class Tentacle : MonoBehaviour
         AddNewSegment(transform.position, transform.position);
     }
 
-    public virtual Vector3 GetDesiredMovement()
+    public virtual List<MoveInput> GetDesiredMovement()
     {
-        return Vector3.zero;
+        moveInputs.Clear();
+        return moveInputs;
     }
 
     private void UpdateSegments()
@@ -179,6 +201,7 @@ public abstract class Tentacle : MonoBehaviour
 
     private void UpdateEndTentaclePoses()
     {
+        basePoses[^1] = tentacleHead.position;
         float remainingDist = Vector2.Distance(basePoses[^1], basePoses[^2]);
 
         while(remainingDist > minDistTentaclesPoints)
@@ -200,6 +223,7 @@ public abstract class Tentacle : MonoBehaviour
 
     private void UpdateStartTentaclePoses()
     {
+        basePoses[0] = root.position;
         float remainingDist = Vector2.Distance(basePoses[0], basePoses[1]);
 
         while(remainingDist > minDistTentaclesPoints)
@@ -254,7 +278,7 @@ public abstract class Tentacle : MonoBehaviour
         segment.transform.localScale = newScale;
     }
 
-    public void ApplyFABRIK(Vector3 target, List<Vector3> points, int iterations = 1, float length = 1)
+    public void ApplyFABRIK(Vector3 target, List<Vector3> points, int iterations, float length = 1)
     {
         if (points.Count < 2) return;
         Vector3 origin = points[0];
@@ -280,19 +304,20 @@ public abstract class Tentacle : MonoBehaviour
     }
 
     //bool return if tentacle is fully retracted and can be destroyed so we can end the main process
-    public bool RetractAlongPath()
+    public bool RetractAlongPath(Vector3 startPos, out Vector3 endPos)
     {       
         Vector3 currentPos;
         Vector3 nextPos;
+        endPos = startPos;
+        basePoses[^1]= startPos;
 
         float remainingDist = retractSpeed * Time.deltaTime;
         int count = 0;
 
         while(remainingDist > 0f && count <= 20)
         {
-            if(basePoses.Count < segmentBeforeDelete || segments.Count == 0)
+            if(basePoses.Count < segmentBeforeDelete || segments.Count <= 2)
             {
-                DestroyTentacle();
                 return true;
             }
 
@@ -321,24 +346,22 @@ public abstract class Tentacle : MonoBehaviour
             {
                 Debug.LogWarning("Count too high");
             }
-
-            newHeadPos = currentPos;
-            Vector3 newShootDir = currentPos - nextPos;
-            if(newShootDir.magnitude > 0.0001f)
-            {
-                shootDir = newShootDir.normalized;
-            }
         }
+        endPos = basePoses[^1];
         return false;
     }
 
     public void CalculateWigglePoses()
     {
+        float distTotal = 0f;
         for(int i = 0; i < basePoses.Count-1; i++)
         {
+            //we uses dist instead of i cause the FABRIK pass reduce the distance btw points and wiggle gets too noticeable
+            distTotal += Vector2.Distance(basePoses[i], basePoses[i+1]) / minDistTentaclesPoints; ;
+         
             float lerpFactor = i * 1f / basePoses.Count;
             float dampFactor = Mathf.Lerp(1f, endDampening, lerpFactor);
-            float offset = Mathf.Sin(Time.time * wiggleSpeed + i * wiggleFrequency) * wiggleAmplitude * dampFactor;
+            float offset = Mathf.Sin(Time.time * wiggleSpeed + distTotal * wiggleFrequency) * wiggleAmplitude * dampFactor;
 
             Vector3 dir = (basePoses[i+1] - basePoses[i]).normalized;
             Vector3 wiggleDir = Vector3.Cross(dir, Vector3.forward);
@@ -384,11 +407,14 @@ public abstract class Tentacle : MonoBehaviour
                 Gizmos.color = Color.green;
                 Gizmos.DrawLine(basePoses[i], basePoses[i+1]);
                 
-                Gizmos.color = Color.blue;
+                /*Gizmos.color = Color.blue;
                 Gizmos.DrawLine(targetPoses[i], targetPoses[i+1]);
                 
                 Gizmos.color = Color.red;
-                Gizmos.DrawLine(currentPoses[i], currentPoses[i+1]);
+                Gizmos.DrawLine(currentPoses[i], currentPoses[i+1]);*/
+
+                Gizmos.DrawWireSphere(root.position, 0.1f);
+                Gizmos.DrawWireSphere(tentacleHead.position, 0.1f);
             }
         }       
     }

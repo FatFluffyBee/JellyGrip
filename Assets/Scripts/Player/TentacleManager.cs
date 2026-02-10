@@ -14,6 +14,7 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
 
     private Tentacle currentTentacle;
     private int tentacleIndex = 0;
+    private List<MoveInput> moveInputs = new List<MoveInput>();
  
     void Start()
     {
@@ -91,14 +92,15 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
         dirSelectionGizmos.transform.up = -dir;
     }
 
-    public MoveInput GetDesiredMovement()
+    public List<MoveInput> GetDesiredMovement()
     {
+        moveInputs.Clear();
         if(currentTentacle != null)
         {
-            return new MoveInput(currentTentacle.GetDesiredMovement(), MoveType.Velocity);
+            moveInputs.AddRange(currentTentacle.GetDesiredMovement());
         }
         
-        return new (Vector3.zero, MoveType.Velocity);
+        return moveInputs;
     }
 
     public void RetractAllTentacles()

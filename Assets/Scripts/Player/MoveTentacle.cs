@@ -1,26 +1,33 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class MoveTentacle : Tentacle
 {
-    [SerializeField] private float grabSpeed;
+    [SerializeField] private float initialMoveStrenght;
+    [SerializeField] private float moveStrenghtOverTime;
 
     private bool isGrabbing = false;
+    private bool firstImpact = true;
 
-    protected override void ApplyChildPhysics()
+    protected override void ApplyChildVisuals()
     {
         if(isGrabbing)
         {
-            float targetSegmentSize = Vector3.Distance(root.position, tentacleHead.position) / ((basePoses.Count - 1) * 1f);
-            currentSegmentSize = Mathf.Lerp(currentSegmentSize, targetSegmentSize, 100f * Time.deltaTime);
-
             if(Vector2.Distance(root.position, tentacleHead.position) < 0.5f)
             {
                 DestroyTentacle();
                 return;
             }
 
-            ApplyFABRIK(tentacleHead.position, basePoses, 1, currentSegmentSize);
+            float targetSegmentSize = Vector2.Distance(root.position, tentacleHead.position) / (basePoses.Count - 1) * 1f;
+            currentSegmentSize = Mathf.Lerp(currentSegmentSize, targetSegmentSize, 100f * Time.deltaTime);
         }
+        else
+        {
+            currentSegmentSize = Vector2.Distance(root.position, tentacleHead.position) / (basePoses.Count - 1) * 1f;
+        }
+
+        ApplyFABRIK(tentacleHead.position, basePoses, 5, currentSegmentSize);
     }
 
     public override void TryExpand()
@@ -42,16 +49,25 @@ public class MoveTentacle : Tentacle
         isGrabbing = false;
     }
 
-    public override Vector3 GetDesiredMovement()
+    public override List<MoveInput> GetDesiredMovement()
     {
+        List<MoveInput> moveInputs = new List<MoveInput>();
         if(isGrabbing)
         {
             Vector3 dirToRoot = tentacleHead.position - root.position;
             dirToRoot.ToV2Dir();
-            return dirToRoot * grabSpeed;
+
+            if(firstImpact)
+            {
+                moveInputs.Add(new MoveInput(dirToRoot * initialMoveStrenght, MoveType.Impulse));
+                firstImpact = false;
+            }
+
+            moveInputs.Add(new MoveInput(dirToRoot * moveStrenghtOverTime, MoveType.Velocity));
         }
 
-        return Vector3.zero;
+        moveInputs.Add(new MoveInput(Vector3.zero, MoveType.Velocity));
+        return moveInputs;
     }
 
     public override void HandleHeadCollision(Collision2D collision)
@@ -62,6 +78,7 @@ public class MoveTentacle : Tentacle
             applyForces = false;
             forceExpand = false;
             canExpand = false;
+            wiggleAmplitude /= 2f;
         }
     }
 }

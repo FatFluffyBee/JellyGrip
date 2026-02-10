@@ -22,20 +22,22 @@ public class Movement : MonoBehaviour, IMoveReceiver
         currentVelocity = rb.linearVelocity;
 
         Vector3 newVelocity = Vector3.zero;
-        foreach(IMoveGiver e in moveGivers)
+        foreach(IMoveGiver moveGiver in moveGivers)
         {
-            MoveInput moveInput = e.GetDesiredMovement();
-
-            switch(moveInput.moveType)
+            foreach(MoveInput e in moveGiver.GetDesiredMovement())
             {
-                case MoveType.Velocity:
-                    newVelocity += moveInput.input;
-                    break;
-                
-                case MoveType.Impulse:
-                    currentVelocity += moveInput.input;
-                    break;
+                switch(e.moveType)
+                {
+                    case MoveType.Velocity:
+                        newVelocity += e.input;
+                        break;
+                    
+                    case MoveType.Impulse:
+                        currentVelocity += e.input;
+                        break;
+                }
             }
+            
         }
 
         currentVelocity = Vector3.ClampMagnitude(currentVelocity, maxSpeed);

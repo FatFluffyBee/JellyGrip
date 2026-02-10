@@ -49,7 +49,7 @@ MonoBehaviour:
   tentacleHeadPrefab: {fileID: 4423956220550280420, guid: c388a8d0699c0a744838f0767b9f4a85, type: 3}
   tentacleBodyPrefab: {fileID: 3380045397264743945, guid: 6124571f6727e04418ff47ddc69c5584, type: 3}
   maxAnglePerSecond: 30
-  retractSpeed: 15
+  retractSpeed: 30
   lengthBeforeDelete: 0.3
   wiggleSpeed: 2
   wiggleAmplitude: 0.1
@@ -57,4 +57,5 @@ MonoBehaviour:
   endDampening: 0.1
   smoothFactor: 50
   root: {fileID: 0}
-  grabSpeed: 4
+  initialMoveStrenght: 5
+  moveStrenghtOverTime: 6

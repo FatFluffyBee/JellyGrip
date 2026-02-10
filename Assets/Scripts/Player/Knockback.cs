@@ -1,8 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Knockback : MonoBehaviour, IMoveGiver
 {
     private Vector3 currentKnockback;
+
+    private List<MoveInput> moveInputs = new List<MoveInput>();
 
     public void Apply(Vector3 colPoint, float knockbackForce)
     {
@@ -13,10 +16,13 @@ public class Knockback : MonoBehaviour, IMoveGiver
         currentKnockback += knockBackDir;
     }
 
-    public MoveInput GetDesiredMovement()
+    public List<MoveInput> GetDesiredMovement()
     {
         Vector3 tmp = currentKnockback;
         currentKnockback = Vector3.zero;
-        return new MoveInput(tmp, MoveType.Impulse);
+        
+        moveInputs.Clear();
+        moveInputs.Add(new MoveInput(tmp, MoveType.Impulse));
+        return moveInputs;
     }
 }
