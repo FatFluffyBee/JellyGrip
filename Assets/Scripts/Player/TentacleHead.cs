@@ -23,4 +23,9 @@ public class TentacleHead : MonoBehaviour, IMoveReceiver
     {
         owner.UnregisterMoveGiver(moveGiver);
     }
+
+    public void DisableCollider()
+    {
+        GetComponent<Collider2D>().enabled = false;
+    }
 }

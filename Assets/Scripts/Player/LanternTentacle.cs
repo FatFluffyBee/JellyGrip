@@ -50,7 +50,7 @@ public class LanternTentacle : Tentacle
         if(collision.transform.CompareTag("Wall"))
         {
             canExpand = false;
-            forceRetract = true;
+            ForceRetract();
         }
     }
 }

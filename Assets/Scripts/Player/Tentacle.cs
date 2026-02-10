@@ -4,7 +4,6 @@ using UnityEngine;
 
 public abstract class Tentacle : MonoBehaviour
 {
-    private TentacleManager tentacleManager;
     [Header("Shoot")]
     [SerializeField] protected float shootSpeed;
     [SerializeField] protected float minDistTentaclesPoints;
@@ -38,13 +37,15 @@ public abstract class Tentacle : MonoBehaviour
     protected Rigidbody2D tentacleHeadRb;
     protected Transform tentacleHead;
     private List<IMoveGiver> moveGivers = new List<IMoveGiver>();
+    private TentacleHead tentacleHeadHandler;
 
     protected Vector3 newHeadPos;
 
     public Transform root;
     protected float currentSegmentSize; 
 
-    protected event Action OnTentacleDestroyed;
+    public event Action OnTentacleDestroyed;
+    public event Action<Tentacle> OnForceRetract;
     private float segmentBeforeDelete;
 
     public virtual void TryExpand(){}
@@ -83,7 +84,6 @@ public abstract class Tentacle : MonoBehaviour
 
             newHeadPos += inputTotal * Time.deltaTime;
 
-            //todo Rotate shoot dir towards input total, combien with expand one maybe?
             float t = inputTotal.magnitude / 10f;
             float maxStep = maxAnglePerSecond * Time.deltaTime * t;
             float angle = Vector2.SignedAngle(shootDir, inputTotal.normalized);
@@ -130,8 +130,7 @@ public abstract class Tentacle : MonoBehaviour
 
     public void InitializeTentacle(TentacleManager manager)
     {
-        tentacleManager = manager;
-        tentacleManager.OnCancel += ForceRetractTentacle;
+        OnForceRetract += manager.DisconnectTentacle;
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         shootDir = mousePos - transform.position;
         shootDir.z = 0;
@@ -139,7 +138,9 @@ public abstract class Tentacle : MonoBehaviour
 
         tentacleHead = Instantiate(tentacleHeadPrefab, transform.position, Quaternion.identity).transform;
         tentacleHeadRb = tentacleHead.GetComponent<Rigidbody2D>();
-        tentacleHead.GetComponent<TentacleHead>().SetOwner(this);
+        
+        tentacleHeadHandler = tentacleHead.GetComponent<TentacleHead>();
+        tentacleHeadHandler.SetOwner(this);
 
         basePoses.Add(transform.position);
         currentPoses.Add(transform.position);
@@ -362,12 +363,14 @@ public abstract class Tentacle : MonoBehaviour
         {
             Destroy(e);    
         }
-        tentacleManager.OnCancel -= ForceRetractTentacle;
     }
 
-    protected virtual void ForceRetractTentacle()
+    public virtual void ForceRetract()
     {
+        Debug.Log("Force Retracting Tentacle");
         forceRetract = true;
+        tentacleHeadHandler.DisableCollider();
+        OnForceRetract?.Invoke(this);
     }
 
     public virtual void HandleHeadCollision(Collision2D collision){}

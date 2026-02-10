@@ -33,21 +33,19 @@ public class MoveTentacle : Tentacle
 
     public override void TryRetract()
     {
-        forceRetract = true;
-        isGrabbing = false;
+        ForceRetract();
     }
 
-    protected override void ForceRetractTentacle()
+    public override void ForceRetract()
     {
-        //forceRetract = true;
-        //isGrabbing = false;
+        base.ForceRetract();
+        isGrabbing = false;
     }
 
     public override Vector3 GetDesiredMovement()
     {
         if(isGrabbing)
         {
-            Debug.Log("Getting Desired Movement");
             Vector3 dirToRoot = tentacleHead.position - root.position;
             dirToRoot.ToV2Dir();
             return dirToRoot * grabSpeed;

@@ -31,9 +31,9 @@ public class GrabTentacle : Tentacle
         grabbedObject = null;
     }
 
-    protected override void ForceRetractTentacle()
+    public override void ForceRetract()
     {
-        base.ForceRetractTentacle();
+        base.ForceRetract();
         ReleaseGrabbedObject();
     }
 
@@ -43,7 +43,7 @@ public class GrabTentacle : Tentacle
         {
             grabbedObject?.OnGrabEnd(Vector3.zero);
             canExpand = false;
-            forceRetract = true;
+            ForceRetract();
         }
         
         if(grabbedObject == null && !forceRetract)

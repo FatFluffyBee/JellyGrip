@@ -12,11 +12,9 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
 
     [SerializeField] private List<Sprite> tentacleHeads;
 
-    public event Action OnCancel;
-
     private Tentacle currentTentacle;
     private int tentacleIndex = 0;
-
+ 
     void Start()
     {
         headSpriteSelection.sprite = tentacleHeads[0];
@@ -55,7 +53,6 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
             {
                 if(scroll > 0)
                 {
-                    Debug.Log("Next Tentacle");
                     tentacleIndex++;
                     if(tentacleIndex >=tentaclePrefabs.Count)
                     {
@@ -65,7 +62,6 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
                 } 
                 else if(scroll < 0f)
                 {
-                    Debug.Log("Previous Tentacle");
                     tentacleIndex--;
                     if(tentacleIndex < 0)
                     {
@@ -107,6 +103,19 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
 
     public void RetractAllTentacles()
     {
-        OnCancel?.Invoke();
+        if(currentTentacle != null)        
+        {
+            currentTentacle.ForceRetract();
+        }
+    }
+
+    public void DisconnectTentacle(Tentacle tentacle)
+    {
+        Debug.Log("Disconnecting Tentacle");
+        if(currentTentacle == tentacle)
+        {
+            currentTentacle = null;
+        }
+        tentacle.OnForceRetract -= DisconnectTentacle;
     }
 }

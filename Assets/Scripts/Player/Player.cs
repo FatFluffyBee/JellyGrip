@@ -11,7 +11,7 @@ public class Player : MonoBehaviour
 
     [SerializeField] private float knockbackForce = 10f;
     
-    public event Action OnObstacleHit;
+    //public event Action OnObstacleHit;
 
     private void Awake()
     {
