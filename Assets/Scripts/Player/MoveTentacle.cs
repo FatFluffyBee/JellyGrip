@@ -74,6 +74,11 @@ public class MoveTentacle : Tentacle
     {
         if(collision.transform.CompareTag("Wall"))
         {
+            if(!isGrabbing)
+            {
+                AudioManager.Instance.PlayOneShot(tentacleHitWall);
+            }
+
             isGrabbing = true;
             applyForces = false;
             forceExpand = false;

@@ -56,4 +56,7 @@ MonoBehaviour:
   wiggleFrequency: 0.2
   endDampening: 0.1
   smoothFactor: 50
+  fireTentacle: {fileID: 0}
+  retractTentacle: {fileID: 0}
+  tentacleHitWall: {fileID: 0}
   root: {fileID: 0}

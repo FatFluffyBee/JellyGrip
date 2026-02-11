@@ -1,16 +1,8 @@
 using UnityEngine;
+using FMODUnity;
 
-public class AudioAssetSO : MonoBehaviour
+[CreateAssetMenu(fileName = "NewAudioAsset", menuName = "Audio/AudioAsset")]
+public class AudioAssetSO : ScriptableObject
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public EventReference fmodEvent;
 }

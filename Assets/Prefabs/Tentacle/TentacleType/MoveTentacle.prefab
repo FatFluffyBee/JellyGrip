@@ -56,6 +56,9 @@ MonoBehaviour:
   wiggleFrequency: 0.2
   endDampening: 0.1
   smoothFactor: 50
+  fireTentacle: {fileID: 11400000, guid: e82084fc4512d5441b41e26615cdf54f, type: 2}
+  retractTentacle: {fileID: 11400000, guid: 5136df627fe08b24db8baa1c45a3579b, type: 2}
+  tentacleHitWall: {fileID: 11400000, guid: 6101435cfc443b8438cda349de68ca32, type: 2}
   root: {fileID: 0}
   initialMoveStrenght: 5
   moveStrenghtOverTime: 6

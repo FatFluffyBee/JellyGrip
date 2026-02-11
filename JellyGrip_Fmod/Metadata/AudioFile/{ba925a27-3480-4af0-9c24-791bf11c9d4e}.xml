@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{ba925a27-3480-4af0-9c24-791bf11c9d4e}">
+		<property name="assetPath">
+			<value>Cartoon, Vocal, Cartoon Character, Lick Slurp SND15283.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>96</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>4.4728854166666663</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{91306100-71cd-48b5-8335-2f46a5b0b037}</destination>
+		</relationship>
+	</object>
+</objects>

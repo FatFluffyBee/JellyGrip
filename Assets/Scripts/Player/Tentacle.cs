@@ -22,6 +22,11 @@ public abstract class Tentacle : MonoBehaviour
     [SerializeField] protected float endDampening;
     [SerializeField] protected float smoothFactor;
 
+    [Header("Audio")]
+    [SerializeField] protected AudioAssetSO fireTentacle;
+    [SerializeField] protected AudioAssetSO retractTentacle;
+    [SerializeField] protected AudioAssetSO tentacleHitWall;
+
     protected bool canExpand = true;
     protected bool isExpanding = false;
     protected bool forceExpand = false;
@@ -113,7 +118,6 @@ public abstract class Tentacle : MonoBehaviour
         {
             if(RetractAlongPath(newHeadPos, out Vector3 finalHeadPos))
             {
-                Debug.Log("Deetroying tentacle");
                 DestroyTentacle();
                 return;
             }
@@ -175,6 +179,8 @@ public abstract class Tentacle : MonoBehaviour
         segmentBeforeDelete = lengthBeforeDelete / minDistTentaclesPoints;
 
         AddNewSegment(transform.position, transform.position);
+
+        AudioManager.Instance.PlayOneShot(fireTentacle);
     }
 
     public virtual List<MoveInput> GetDesiredMovement()
@@ -374,6 +380,7 @@ public abstract class Tentacle : MonoBehaviour
     {
         OnTentacleDestroyed?.Invoke();
 
+        AudioManager.Instance.PlayOneShot(retractTentacle);
         CleanUp();
 
         Destroy(tentacleHead.gameObject);
