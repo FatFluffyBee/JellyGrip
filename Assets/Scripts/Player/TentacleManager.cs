@@ -15,6 +15,8 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
     private Tentacle currentTentacle;
     private int tentacleIndex = 0;
     private List<MoveInput> moveInputs = new List<MoveInput>();
+    private bool isHoldingLeft = false;
+    private bool rightAsReleasedSinceLastSpawn = true;
  
     void Start()
     {
@@ -28,22 +30,50 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
 
         if(Input.GetMouseButton(0))
         {
+            if(!isHoldingLeft)
+            {
+                if(currentTentacle == null)
+                {
+                    currentTentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
+                    currentTentacle.root = launchPos;
+                    currentTentacle.InitializeTentacle(this);
+                    currentTentacle.TryExpand();
+                }
+                else
+                {
+                    currentTentacle.TryExpand();
+                }
+            }
+            else
+            {
+                if(currentTentacle != null)
+                {
+                    currentTentacle.TryExpand();
+                }
+            }
+            
+            isHoldingLeft = true;
+        }
+        if(Input.GetMouseButtonUp(0))
+        {
+            isHoldingLeft = false;
+        }
+
+        if(Input.GetMouseButton(1) && rightAsReleasedSinceLastSpawn)
+        {
             if(currentTentacle == null)
             {
-                currentTentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
-                currentTentacle.root = launchPos;
-                currentTentacle.InitializeTentacle(this);
-                currentTentacle.TryExpand();
+                rightAsReleasedSinceLastSpawn = false;
             }
-            else 
+            else
             {
-                currentTentacle.TryExpand();
+                currentTentacle.TryRetract();
             }
         }
 
-        if(Input.GetMouseButton(1) && currentTentacle != null)
+        if(Input.GetMouseButtonUp(1))
         {
-            currentTentacle.TryRetract();
+            rightAsReleasedSinceLastSpawn = true;
         }
 
         float scroll = Mouse.current.scroll.y.ReadValue();
