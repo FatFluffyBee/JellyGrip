@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &344457906701367754
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9218112954798425407}
+  m_Layer: 7
+  m_Name: FxLaunchPos
+  m_TagString: Untagged
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9218112954798425407
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 344457906701367754}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.222, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3397997246766962863}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &873305945605856953
 GameObject:
   m_ObjectHideFlags: 0
@@ -180,10 +211,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3397997246766962863}
+  - component: {fileID: 5902927157668453884}
   - component: {fileID: 3505581489159812316}
   - component: {fileID: 430192975116315943}
   - component: {fileID: 7468179844699784460}
-  - component: {fileID: 5902927157668453884}
   m_Layer: 7
   m_Name: LanternHead
   m_TagString: Tentacle
@@ -204,10 +235,25 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 9218112954798425407}
   - {fileID: 5917611093012357283}
   - {fileID: 241079697548415953}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5902927157668453884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7644811421491003815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47223604c75014d43b745cf7c6f45e46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitFx: {fileID: 6864083220550978062, guid: 9b34a1dd63f67b84b857e540c4f3b5ff, type: 3}
+  spawnFxPoint: {fileID: 9218112954798425407}
 --- !u!114 &3505581489159812316
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298,15 +344,3 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
---- !u!114 &5902927157668453884
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7644811421491003815}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 47223604c75014d43b745cf7c6f45e46, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

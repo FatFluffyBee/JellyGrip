@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fmodEvent:
     Guid:
-      Data1: 177333835
-      Data2: 1250689337
-      Data3: 1857209522
-      Data4: -1465568898
+      Data1: 37982233
+      Data2: 1095072848
+      Data3: -1946696006
+      Data4: -813292057
     Path: event:/Tentacle_Move/Retract
