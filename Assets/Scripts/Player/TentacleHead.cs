@@ -3,7 +3,6 @@ using UnityEngine;
 public class TentacleHead : MonoBehaviour, IMoveReceiver
 {
     private Tentacle owner;
-    [SerializeField] private ParticleSystem hitFx;
     [SerializeField] private Transform spawnFxPoint;
 
     public void SetOwner(Tentacle tentacle)
@@ -13,12 +12,8 @@ public class TentacleHead : MonoBehaviour, IMoveReceiver
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        owner.HandleHeadCollision(collision);
-
-        if(collision.gameObject.CompareTag("Wall"))
-        {
-            TriggerHitVisuals(spawnFxPoint.position, spawnFxPoint.rotation);
-        }
+        CollisionInfo colInfo = new CollisionInfo  (collision, spawnFxPoint, transform.up);
+        owner.HandleHeadCollision(colInfo);
     }
 
     public void AddMovementSource(IMoveGiver moveGiver)
@@ -35,12 +30,18 @@ public class TentacleHead : MonoBehaviour, IMoveReceiver
     {
         GetComponent<Collider2D>().enabled = false;
     }
+}
 
-    //todo this manages only visuals and shouldnt care about the tentacle type
-    public void TriggerHitVisuals(Vector3 pos, Quaternion rot)
+public struct CollisionInfo
+{
+    public Collision2D collision2D;
+    public Transform spawnPointFX;
+    public Vector2 headDir;
+
+    public CollisionInfo(Collision2D collision2D, Transform spawnPointFX, Vector2 headDir)
     {
-        ParticleSystem fxInstance = Instantiate(hitFx, pos, rot).GetComponent<ParticleSystem>();
-        fxInstance.Play();
-        Destroy(fxInstance.gameObject, fxInstance.main.duration);
+        this.collision2D = collision2D;
+        this.spawnPointFX = spawnPointFX;
+        this.headDir = headDir;
     }
 }

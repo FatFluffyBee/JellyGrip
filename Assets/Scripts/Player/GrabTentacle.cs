@@ -37,9 +37,9 @@ public class GrabTentacle : Tentacle
         ReleaseGrabbedObject();
     }
 
-    public override void HandleHeadCollision(Collision2D collision)
+    public override void HandleHeadCollision(CollisionInfo colInfo)
     {
-        if(collision.transform.CompareTag("Wall"))
+        if(colInfo.collision2D.transform.CompareTag("Wall"))
         {
             grabbedObject?.OnGrabEnd(Vector3.zero);
             canExpand = false;
@@ -48,7 +48,7 @@ public class GrabTentacle : Tentacle
         
         if(grabbedObject == null && !forceRetract)
         {
-            IGrabbable grabbed = collision.transform.GetComponent<IGrabbable>();
+            IGrabbable grabbed = colInfo.collision2D.transform.GetComponent<IGrabbable>();
             if(grabbed != null)
             {
                 grabbedObject = grabbed;

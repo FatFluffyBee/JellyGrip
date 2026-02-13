@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class MoveTentacle : Tentacle
 {
+    [Header("Move Player")]
     [SerializeField] private float initialMoveStrenght;
     [SerializeField] private float moveStrenghtOverTime;
 
@@ -70,20 +71,41 @@ public class MoveTentacle : Tentacle
         return moveInputs;
     }
 
-    public override void HandleHeadCollision(Collision2D collision)
+    public override void HandleHeadCollision(CollisionInfo colInfo)
     {
+        Collision2D collision = colInfo.collision2D;
+
         if(collision.transform.CompareTag("Wall"))
         {
             if(!isGrabbing)
             {
-                AudioManager.Instance.PlayOneShot(tentacleHitWall);
+                OnInitialWallHitFeedback(colInfo);
+                StartGrabState();
             }
-
-            isGrabbing = true;
-            applyForces = false;
-            forceExpand = false;
-            canExpand = false;
-            wiggleAmplitude /= 2f;
         }
+    }
+
+    private void StartGrabState()
+    {
+        isGrabbing = true;
+        applyForces = false;
+        forceExpand = false;
+        canExpand = false;
+        wiggleAmplitude /= 2f;
+    }
+
+    public void OnInitialWallHitFeedback(CollisionInfo colInfo)
+    {
+        AudioManager.Instance.PlayOneShot(tentacleHitWall);
+        ParticleSystem fxInstance = Instantiate(
+            wallHitFX, 
+            colInfo.spawnPointFX.position, 
+            colInfo.spawnPointFX.rotation)
+            .GetComponent<ParticleSystem>();
+        fxInstance.Play();
+        Destroy(fxInstance.gameObject, fxInstance.main.duration);
+
+        ShakeObject shakeObject = new ShakeObject(shakeDuration, shakeIntensity, shakeFrequency, colInfo.headDir);
+        shakeEvent.Raise(shakeObject);
     }
 }

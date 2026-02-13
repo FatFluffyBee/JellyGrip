@@ -35,8 +35,7 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
                 if(currentTentacle == null)
                 {
                     currentTentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
-                    currentTentacle.root = launchPos;
-                    currentTentacle.InitializeTentacle(this);
+                    currentTentacle.InitializeTentacle(this, launchPos);
                     currentTentacle.TryExpand();
                 }
                 else

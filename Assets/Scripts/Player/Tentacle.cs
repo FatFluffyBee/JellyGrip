@@ -27,6 +27,16 @@ public abstract class Tentacle : MonoBehaviour
     [SerializeField] protected AudioAssetSO retractTentacle;
     [SerializeField] protected AudioAssetSO tentacleHitWall;
 
+    [Header("FX")]
+    [SerializeField] protected GameObject wallHitFX;
+
+    [Header("ScreenShake")]
+    [SerializeField] protected ScreenshakeEventSO shakeEvent;
+    [SerializeField] protected float shakeDuration;
+    [SerializeField] protected float shakeIntensity;
+    [SerializeField] protected float shakeFrequency;
+
+
     protected bool canExpand = true;
     protected bool isExpanding = false;
     protected bool forceExpand = false;
@@ -44,9 +54,7 @@ public abstract class Tentacle : MonoBehaviour
     private List<IMoveGiver> moveGivers = new List<IMoveGiver>();
     private TentacleHead tentacleHeadHandler;
 
-    //protected Vector3 newHeadPos;
-
-    public Transform root;
+    protected Transform root;
     protected float currentSegmentSize; 
 
     public event Action OnTentacleDestroyed;
@@ -153,7 +161,7 @@ public abstract class Tentacle : MonoBehaviour
         
     }
 
-    public void InitializeTentacle(TentacleManager manager)
+    public void InitializeTentacle(TentacleManager manager, Transform root)
     {
         OnForceRetract += manager.DisconnectTentacle;
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -163,6 +171,7 @@ public abstract class Tentacle : MonoBehaviour
 
         tentacleHead = Instantiate(tentacleHeadPrefab, transform.position, Quaternion.identity).transform;
         tentacleHeadRb = tentacleHead.GetComponent<Rigidbody2D>();
+        this.root = root;
         
         tentacleHeadHandler = tentacleHead.GetComponent<TentacleHead>();
         tentacleHeadHandler.SetOwner(this);
@@ -403,7 +412,7 @@ public abstract class Tentacle : MonoBehaviour
         OnForceRetract?.Invoke(this);
     }
 
-    public virtual void HandleHeadCollision(Collision2D collision){}
+    public virtual void HandleHeadCollision(CollisionInfo colInfo){}
 
     void OnDrawGizmos()
     {

@@ -45,9 +45,9 @@ public class LanternTentacle : Tentacle
         Gizmos.DrawWireSphere(tentacleHead.position, activationRange);
     }
 
-    public override void HandleHeadCollision(Collision2D collision)
+    public override void HandleHeadCollision(CollisionInfo colInfo)
     {
-        if(collision.transform.CompareTag("Wall"))
+        if(colInfo.collision2D.transform.CompareTag("Wall"))
         {
             canExpand = false;
             ForceRetract();
