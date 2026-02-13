@@ -31,24 +31,24 @@ public class GrabTentacle : Tentacle
         grabbedObject = null;
     }
 
-    protected override void ForceRetractTentacle()
+    public override void ForceRetract()
     {
-        base.ForceRetractTentacle();
+        base.ForceRetract();
         ReleaseGrabbedObject();
     }
 
-    public override void HandleHeadCollision(Collision2D collision)
+    public override void HandleHeadCollision(CollisionInfo colInfo)
     {
-        if(collision.transform.CompareTag("Wall"))
+        if(colInfo.collision2D.transform.CompareTag("Wall"))
         {
             grabbedObject?.OnGrabEnd(Vector3.zero);
             canExpand = false;
-            forceRetract = true;
+            ForceRetract();
         }
         
         if(grabbedObject == null && !forceRetract)
         {
-            IGrabbable grabbed = collision.transform.GetComponent<IGrabbable>();
+            IGrabbable grabbed = colInfo.collision2D.transform.GetComponent<IGrabbable>();
             if(grabbed != null)
             {
                 grabbedObject = grabbed;

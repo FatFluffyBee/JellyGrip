@@ -56,4 +56,10 @@ MonoBehaviour:
   wiggleFrequency: 0.2
   endDampening: 0.1
   smoothFactor: 50
-  root: {fileID: 0}
+  fireTentacle: {fileID: 0}
+  retractTentacle: {fileID: 0}
+  tentacleHitWall: {fileID: 0}
+  wallHitFX: {fileID: 0}
+  shakeEvent: {fileID: 11400000, guid: d0fe239685a0e60459fcdc3f0a90aaf0, type: 2}
+  shakeDuration: 0
+  shakeIntensity: 0

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="EventFolder" id="{6b40df42-5c41-4521-983b-6f8556033698}">
+		<property name="name">
+			<value>Tentacle_Move</value>
+		</property>
+		<relationship name="folder">
+			<destination>{e0983800-c66b-4fec-94bc-d58711497369}</destination>
+		</relationship>
+	</object>
+</objects>

@@ -12,11 +12,12 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
 
     [SerializeField] private List<Sprite> tentacleHeads;
 
-    public event Action OnCancel;
-
     private Tentacle currentTentacle;
     private int tentacleIndex = 0;
-
+    private List<MoveInput> moveInputs = new List<MoveInput>();
+    private bool isHoldingLeft = false;
+    private bool rightAsReleasedSinceLastSpawn = true;
+ 
     void Start()
     {
         headSpriteSelection.sprite = tentacleHeads[0];
@@ -29,22 +30,49 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
 
         if(Input.GetMouseButton(0))
         {
+            if(!isHoldingLeft)
+            {
+                if(currentTentacle == null)
+                {
+                    currentTentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
+                    currentTentacle.InitializeTentacle(this, launchPos);
+                    currentTentacle.TryExpand();
+                }
+                else
+                {
+                    currentTentacle.TryExpand();
+                }
+            }
+            else
+            {
+                if(currentTentacle != null)
+                {
+                    currentTentacle.TryExpand();
+                }
+            }
+            
+            isHoldingLeft = true;
+        }
+        if(Input.GetMouseButtonUp(0))
+        {
+            isHoldingLeft = false;
+        }
+
+        if(Input.GetMouseButton(1) && rightAsReleasedSinceLastSpawn)
+        {
             if(currentTentacle == null)
             {
-                currentTentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
-                currentTentacle.root = launchPos;
-                currentTentacle.InitializeTentacle(this);
-                currentTentacle.TryExpand();
+                rightAsReleasedSinceLastSpawn = false;
             }
-            else 
+            else
             {
-                currentTentacle.TryExpand();
+                currentTentacle.TryRetract();
             }
         }
 
-        if(Input.GetMouseButton(1) && currentTentacle != null)
+        if(Input.GetMouseButtonUp(1))
         {
-            currentTentacle.TryRetract();
+            rightAsReleasedSinceLastSpawn = true;
         }
 
         float scroll = Mouse.current.scroll.y.ReadValue();
@@ -55,7 +83,6 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
             {
                 if(scroll > 0)
                 {
-                    Debug.Log("Next Tentacle");
                     tentacleIndex++;
                     if(tentacleIndex >=tentaclePrefabs.Count)
                     {
@@ -65,7 +92,6 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
                 } 
                 else if(scroll < 0f)
                 {
-                    Debug.Log("Previous Tentacle");
                     tentacleIndex--;
                     if(tentacleIndex < 0)
                     {
@@ -95,18 +121,32 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
         dirSelectionGizmos.transform.up = -dir;
     }
 
-    public MoveInput GetDesiredMovement()
+    public List<MoveInput> GetDesiredMovement()
     {
+        moveInputs.Clear();
         if(currentTentacle != null)
         {
-            return new MoveInput(currentTentacle.GetDesiredMovement(), MoveType.Velocity);
+            moveInputs.AddRange(currentTentacle.GetDesiredMovement());
         }
         
-        return new (Vector3.zero, MoveType.Velocity);
+        return moveInputs;
     }
 
     public void RetractAllTentacles()
     {
-        OnCancel?.Invoke();
+        if(currentTentacle != null)        
+        {
+            currentTentacle.ForceRetract();
+        }
+    }
+
+    public void DisconnectTentacle(Tentacle tentacle)
+    {
+        Debug.Log("Disconnecting Tentacle");
+        if(currentTentacle == tentacle)
+        {
+            currentTentacle = null;
+        }
+        tentacle.OnForceRetract -= DisconnectTentacle;
     }
 }

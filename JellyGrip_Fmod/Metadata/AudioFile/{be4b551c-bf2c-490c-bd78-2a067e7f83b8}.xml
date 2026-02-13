@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{be4b551c-bf2c-490c-bd78-2a067e7f83b8}">
+		<property name="assetPath">
+			<value>Weapons, Misc, Designed, Dart, Shuriken, Throw, Burst, 8Bit, Retro, Variations SND115796 2.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>96</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>3.7017708333333332</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{91306100-71cd-48b5-8335-2f46a5b0b037}</destination>
+		</relationship>
+	</object>
+</objects>

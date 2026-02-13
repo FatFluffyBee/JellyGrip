@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -6,6 +7,8 @@ public class Wind : MonoBehaviour, IMoveGiver
     [SerializeField] private Vector3 windDirection;
     [SerializeField] private float windStrength;
     [SerializeField] private ParticleSystem windParticles;
+
+    private List<MoveInput> moveInputs = new List<MoveInput>();
 
     private void Start()
     {
@@ -17,9 +20,11 @@ public class Wind : MonoBehaviour, IMoveGiver
         ApplyWindChanges();
     }
 
-    public MoveInput GetDesiredMovement()
+    public List<MoveInput> GetDesiredMovement()
     {
-        return new MoveInput(windDirection.normalized * windStrength, MoveType.Velocity);
+        moveInputs.Clear();
+        moveInputs.Add(new MoveInput(windDirection.normalized * windStrength, MoveType.Velocity));
+        return moveInputs;
     }
 
     private void ApplyWindChanges()

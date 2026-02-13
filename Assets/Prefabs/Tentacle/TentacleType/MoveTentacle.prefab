@@ -49,12 +49,20 @@ MonoBehaviour:
   tentacleHeadPrefab: {fileID: 4423956220550280420, guid: c388a8d0699c0a744838f0767b9f4a85, type: 3}
   tentacleBodyPrefab: {fileID: 3380045397264743945, guid: 6124571f6727e04418ff47ddc69c5584, type: 3}
   maxAnglePerSecond: 30
-  retractSpeed: 15
+  retractSpeed: 30
   lengthBeforeDelete: 0.3
   wiggleSpeed: 2
   wiggleAmplitude: 0.1
   wiggleFrequency: 0.2
   endDampening: 0.1
   smoothFactor: 50
-  root: {fileID: 0}
-  grabSpeed: 4
+  fireTentacle: {fileID: 11400000, guid: e82084fc4512d5441b41e26615cdf54f, type: 2}
+  retractTentacle: {fileID: 11400000, guid: 5136df627fe08b24db8baa1c45a3579b, type: 2}
+  tentacleHitWall: {fileID: 11400000, guid: 6101435cfc443b8438cda349de68ca32, type: 2}
+  wallHitFX: {fileID: 6685447091673610203, guid: 9b34a1dd63f67b84b857e540c4f3b5ff, type: 3}
+  shakeEvent: {fileID: 11400000, guid: d0fe239685a0e60459fcdc3f0a90aaf0, type: 2}
+  shakeDuration: 0.3
+  shakeIntensity: 0.05
+  shakeFrequency: 1
+  initialMoveStrenght: 5
+  moveStrenghtOverTime: 6

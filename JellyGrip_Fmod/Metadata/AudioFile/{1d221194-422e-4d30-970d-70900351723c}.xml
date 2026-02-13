@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{1d221194-422e-4d30-970d-70900351723c}">
+		<property name="assetPath">
+			<value>Bullets, Impact, Metal, Heavy, Powerful, Hard SND6400 2 - Trimmed.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>96</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>0.99829166666666669</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{91306100-71cd-48b5-8335-2f46a5b0b037}</destination>
+		</relationship>
+	</object>
+</objects>
