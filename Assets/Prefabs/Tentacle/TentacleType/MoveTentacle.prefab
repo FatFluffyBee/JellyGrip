@@ -62,7 +62,7 @@ MonoBehaviour:
   wallHitFX: {fileID: 6685447091673610203, guid: 9b34a1dd63f67b84b857e540c4f3b5ff, type: 3}
   shakeEvent: {fileID: 11400000, guid: d0fe239685a0e60459fcdc3f0a90aaf0, type: 2}
   shakeDuration: 0.3
-  shakeIntensity: 0.05
+  shakeIntensity: 0.1
   shakeFrequency: 1
   initialMoveStrenght: 5
   moveStrenghtOverTime: 6
