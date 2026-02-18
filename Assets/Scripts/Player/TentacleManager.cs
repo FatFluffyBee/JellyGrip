@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
 
-public class TentacleManager : MonoBehaviour, IMoveGiver
+public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
 {
     [SerializeField] private Transform launchPos;
     [SerializeField] private List<GameObject> tentaclePrefabs;
@@ -15,98 +15,108 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
     private Tentacle currentTentacle;
     private int tentacleIndex = 0;
     private List<MoveInput> moveInputs = new List<MoveInput>();
-    private bool isHoldingLeft = false;
-    private bool rightAsReleasedSinceLastSpawn = true;
+    private bool primaryFireStarted = false;
+    private bool blockRetractationUntilRelease = false;
  
     void Start()
     {
         headSpriteSelection.sprite = tentacleHeads[0];
     }
 
-    void Update()
+    public void PrimaryFirePressed()
     {
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0;
-
-        if(Input.GetMouseButton(0))
+        if(!primaryFireStarted && currentTentacle == null)
         {
-            if(!isHoldingLeft)
-            {
-                if(currentTentacle == null)
-                {
-                    currentTentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
-                    currentTentacle.InitializeTentacle(this, launchPos);
-                    currentTentacle.TryExpand();
-                }
-                else
-                {
-                    currentTentacle.TryExpand();
-                }
-            }
-            else
-            {
-                if(currentTentacle != null)
-                {
-                    currentTentacle.TryExpand();
-                }
-            }
-            
-            isHoldingLeft = true;
+            currentTentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
+            currentTentacle.InitializeTentacle(this, launchPos);
         }
-        if(Input.GetMouseButtonUp(0))
-        {
-            isHoldingLeft = false;
-        }
+        primaryFireStarted = true;
+    }
 
-        if(Input.GetMouseButton(1) && rightAsReleasedSinceLastSpawn)
+    public void PrimaryFire()
+    {
+        if(currentTentacle != null)
         {
-            if(currentTentacle == null)
-            {
-                rightAsReleasedSinceLastSpawn = false;
-            }
-            else
-            {
-                currentTentacle.TryRetract();
-            }
-        }
+            currentTentacle.TryExpand();
+        }  
+    }
 
-        if(Input.GetMouseButtonUp(1))
-        {
-            rightAsReleasedSinceLastSpawn = true;
-        }
+    public void PrimaryFireRelease()
+    {
+        primaryFireStarted = false;
+    }
 
-        float scroll = Mouse.current.scroll.y.ReadValue();
+    public void SecondaryFirePressed()
+    {
         
-        if(scroll != 0)
+    }
+
+    public void SecondaryFire()
+    {
+        if(blockRetractationUntilRelease)
         {
-           if(currentTentacle == null)
+            return;
+        }
+
+        if(currentTentacle != null)
+        {
+            currentTentacle.TryRetract();
+        }
+        else
+        {
+            blockRetractationUntilRelease = true;
+        }
+    }
+
+    public void SecondaryFireRelease()
+    {
+        blockRetractationUntilRelease = false;
+    }
+
+    public void Aiming(Vector2 direction)
+    {
+        
+    }
+
+    public void OnWeaponChange(bool up)
+    {
+        if(currentTentacle == null)
+        {
+            if(up)
             {
-                if(scroll > 0)
-                {
-                    tentacleIndex++;
-                    if(tentacleIndex >=tentaclePrefabs.Count)
-                    {
-                        tentacleIndex = 0;
-                    }
-                    headSpriteSelection.sprite = tentacleHeads[tentacleIndex];
-                } 
-                else if(scroll < 0f)
-                {
-                    tentacleIndex--;
-                    if(tentacleIndex < 0)
-                    {
-                        tentacleIndex = tentaclePrefabs.Count - 1;
-                    }
-                    headSpriteSelection.sprite = tentacleHeads[tentacleIndex];
-                } 
+                ChangeTentacleIndex(tentacleIndex + 1);
             } 
             else
             {
-                RetractAllTentacles();
-            }
+                ChangeTentacleIndex(tentacleIndex - 1);
+            } 
+        } 
+        else
+        {
+            RetractAllTentacles();
         }
-        
+    }
 
+    public void ChangeTentacleIndex(int index)
+    {
+        if(index < 0)
+        {
+           index = tentacleHeads.Count - 1;
+        }
+        else if(index >= tentacleHeads.Count)
+        {
+            index = 0;
+        }
+
+        tentacleIndex = index;
+        headSpriteSelection.sprite = tentacleHeads[tentacleIndex];
+    }
+
+    /*void Update()
+    {
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mousePos.z = 0;
+        
         if(currentTentacle == null)
         {
             dirSelectionGizmos.SetActive(true);
@@ -116,10 +126,11 @@ public class TentacleManager : MonoBehaviour, IMoveGiver
             dirSelectionGizmos.SetActive(false);
         }
 
+        //! how to pass the direction without a ref to input or manager? I can update visual and target ig
         Vector3 dir = mousePos - transform.position;
         dir.ToV2Dir();
         dirSelectionGizmos.transform.up = -dir;
-    }
+    }*/
 
     public List<MoveInput> GetDesiredMovement()
     {

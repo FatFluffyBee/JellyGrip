@@ -1,64 +1,126 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+//This architecture is a bit weird, it's cause I wanted to be able to swap handlers on the fly and I would need to unsuscribe
 public class InputManager : MonoBehaviour
 {
-    [SerializeField] private IInputHandler inputHandler;
-    [SerializeField] private InputAction primaryFireAction;
-    [SerializeField] private InputAction secondaryFireAction;
-    [SerializeField] private InputAction aimingAction;
+    public static InputManager Instance { get; private set; }
+    
+    [SerializeField] private TentacleManager sourceGameplayHandler; //original intent was that I could change manager on the fly without changinc code for testing
+    private IGameplayHandler gameplayHandler; 
+
+    [SerializeField] private InputActionReference primaryFireAction;
+    [SerializeField] private InputActionReference secondaryFireAction;
+    [SerializeField] private InputActionReference aimingAction;
+    [SerializeField] private InputActionReference changeWeaponAction;
+
+    private bool primaryHeld = false;
+    private bool secondaryHeld = false;
+
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+
+        gameplayHandler = sourceGameplayHandler;
+    }
+
+    void Update()
+    {
+        if(primaryHeld)
+        {
+            gameplayHandler.PrimaryFire();
+        }
+
+        if(secondaryHeld)
+        {
+            gameplayHandler.SecondaryFire();
+        }
+    }
 
     void OnEnable()
     {
-        primaryFireAction.Enable();
-        secondaryFireAction.Enable();
-        aimingAction.Enable();
+        primaryFireAction.action.Enable();
+        secondaryFireAction.action.Enable();
+        aimingAction.action.Enable();
 
-        primaryFireAction.performed += OnPrimartyFire;
-        primaryFireAction.canceled += OnPrimaryFireEnd;
+        primaryFireAction.action.performed += OnPrimaryFirePressed;
+        primaryFireAction.action.canceled += OnPrimaryFireRelease;
 
-        secondaryFireAction.performed += OnSecondaryFire;
-        secondaryFireAction.canceled += OnSecondaryFireEnd;
+        secondaryFireAction.action.performed += OnSecondaryFirePressed;
+        secondaryFireAction.action.canceled += OnSecondaryFireEnd;
 
-        aimingAction.performed += OnAiming;
+        aimingAction.action.performed += OnAiming;
+
+        changeWeaponAction.action.performed += OnWeaponChange;
     }
 
     void OnDisable()
     {
-        primaryFireAction.performed -= OnPrimartyFire;
-        primaryFireAction.canceled -= OnPrimaryFireEnd;
+        primaryFireAction.action.performed -= OnPrimaryFirePressed;
+        primaryFireAction.action.canceled -= OnPrimaryFireRelease;
 
-        secondaryFireAction.performed -= OnSecondaryFire;
-        secondaryFireAction.canceled -= OnSecondaryFireEnd; 
+        secondaryFireAction.action.performed -= OnSecondaryFirePressed;
+        secondaryFireAction.action.canceled -= OnSecondaryFireEnd; 
 
-        aimingAction.performed -= OnAiming;
+        aimingAction.action.performed -= OnAiming;
 
-        primaryFireAction.Disable();
-        secondaryFireAction.Disable();
+        changeWeaponAction.action.performed -= OnWeaponChange;
+
+        primaryFireAction.action.Disable();
+        secondaryFireAction.action.Disable();
+        aimingAction.action.Disable();
     }
 
-    void OnPrimartyFire(InputAction.CallbackContext context)
+    public void SwitchToUIInput()
     {
-        inputHandler.PrimaryFire();
+        
     }
 
-    void OnPrimaryFireEnd(InputAction.CallbackContext context)
+    public void SwitchToGameplayInput()
     {
-        inputHandler.PrimaryFireEnd();
+        
     }
 
-    void OnSecondaryFire(InputAction.CallbackContext context)
+
+    void OnPrimaryFirePressed(InputAction.CallbackContext context)
     {
-        inputHandler.SecondaryFire();
+        primaryHeld = true;
+        gameplayHandler.PrimaryFirePressed();
+    }
+
+    void OnPrimaryFireRelease(InputAction.CallbackContext context)
+    {
+        primaryHeld = false;
+        gameplayHandler.PrimaryFireRelease();
+    }
+
+    void OnSecondaryFirePressed(InputAction.CallbackContext context)
+    {
+        secondaryHeld = true;
+        gameplayHandler.SecondaryFirePressed();
     }
 
     void OnSecondaryFireEnd(InputAction.CallbackContext context)
     {
-        inputHandler.SecondaryFireEnd();
+        secondaryHeld = false;
+        gameplayHandler.SecondaryFireRelease();
+    }
+
+    void OnWeaponChange(InputAction.CallbackContext context)
+    {
+        bool value = context.ReadValueAsButton();
+        gameplayHandler.OnWeaponChange(value);
     }
 
     void OnAiming(InputAction.CallbackContext context)
     {
-        inputHandler.Aiming(context.ReadValue<Vector2>());
+        gameplayHandler.Aiming(context.ReadValue<Vector2>());
     }
 }
