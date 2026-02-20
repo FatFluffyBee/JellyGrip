@@ -61,6 +61,7 @@ public abstract class Tentacle : MonoBehaviour
     public event Action<Tentacle> OnForceRetract;
     private float segmentBeforeDelete;
     protected Vector3 targetDir;
+    public bool IsDead {get; private set;}
 
     protected List<MoveInput> moveInputs = new List<MoveInput>();
 
@@ -160,9 +161,8 @@ public abstract class Tentacle : MonoBehaviour
         
     }
 
-    public void InitializeTentacle(TentacleManager manager, Transform root, Vector3 targetDir)
+    public void InitializeTentacle(Transform root, Vector3 targetDir)
     {
-        OnForceRetract += manager.DisconnectTentacle;
         this.targetDir = targetDir;
         shootDir = targetDir;
 

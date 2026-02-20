@@ -44,7 +44,8 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
         if(!primaryFireStarted && currentTentacle == null)
         {
             currentTentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
-            currentTentacle.InitializeTentacle(this, launchPos, aimDirFromHead);
+            currentTentacle.InitializeTentacle(launchPos, aimDirFromHead);
+            currentTentacle.OnForceRetract += DisconnectTentacle;
         }
         primaryFireStarted = true;
     }

@@ -6,7 +6,7 @@ public class InputManager : MonoBehaviour
 {
     public static InputManager Instance { get; private set; }
     
-    [SerializeField] private TentacleManager sourceGameplayHandler; //original intent was that I could change manager on the fly without changinc code for testing
+    [SerializeField] private MonoBehaviour sourceGameplayHandler; //original intent was that I could change manager on the fly without changinc code for testing
     private IGameplayHandler gameplayHandler; 
 
     [SerializeField] private InputActionReference primaryFireAction;
@@ -28,7 +28,7 @@ public class InputManager : MonoBehaviour
             Destroy(gameObject);
         }
 
-        gameplayHandler = sourceGameplayHandler;
+        gameplayHandler = sourceGameplayHandler as IGameplayHandler;
     }
 
     void Update()
