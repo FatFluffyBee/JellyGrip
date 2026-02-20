@@ -1,13 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using System;
 
 public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
 {
     [SerializeField] private Transform launchPos;
     [SerializeField] private List<GameObject> tentaclePrefabs;
-    [SerializeField] private GameObject dirSelectionGizmos;
+    [SerializeField] private GameObject dirSelectionGO;
     [SerializeField] private SpriteRenderer headSpriteSelection;
 
     [SerializeField] private List<Sprite> tentacleHeads;
@@ -17,10 +15,28 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
     private List<MoveInput> moveInputs = new List<MoveInput>();
     private bool primaryFireStarted = false;
     private bool blockRetractationUntilRelease = false;
- 
+
+    private Camera mainCam;
+    private AimData lastAimInput;
+    private Vector2 aimDirFromHead;
+    
+    private void Awake()
+    {
+        mainCam = Camera.main;
+    }
+
     void Start()
     {
         headSpriteSelection.sprite = tentacleHeads[0];
+    }
+
+    void Update()
+    {
+        if(currentTentacle != null)
+        {
+            SetTentacleTargetDir(lastAimInput);
+        }
+        SetAimVisual();
     }
 
     public void PrimaryFirePressed()
@@ -28,7 +44,7 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
         if(!primaryFireStarted && currentTentacle == null)
         {
             currentTentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
-            currentTentacle.InitializeTentacle(this, launchPos);
+            currentTentacle.InitializeTentacle(this, launchPos, aimDirFromHead);
         }
         primaryFireStarted = true;
     }
@@ -73,9 +89,16 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
         blockRetractationUntilRelease = false;
     }
 
-    public void Aiming(Vector2 direction)
+    public void Aiming(AimData aimData)
     {
-        
+        lastAimInput = aimData;
+        CalculateDirFromHead(lastAimInput);
+        SetAimingVisualDir(aimDirFromHead);
+    }
+
+    public void SetAimingVisualDir(Vector2 aimDir)
+    {
+        dirSelectionGO.transform.up = -aimDir;
     }
 
     public void OnWeaponChange(bool up)
@@ -112,26 +135,6 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
         headSpriteSelection.sprite = tentacleHeads[tentacleIndex];
     }
 
-    /*void Update()
-    {
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0;
-        
-        if(currentTentacle == null)
-        {
-            dirSelectionGizmos.SetActive(true);
-        }
-        else
-        {
-            dirSelectionGizmos.SetActive(false);
-        }
-
-        //! how to pass the direction without a ref to input or manager? I can update visual and target ig
-        Vector3 dir = mousePos - transform.position;
-        dir.ToV2Dir();
-        dirSelectionGizmos.transform.up = -dir;
-    }*/
-
     public List<MoveInput> GetDesiredMovement()
     {
         moveInputs.Clear();
@@ -160,4 +163,50 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
         }
         tentacle.OnForceRetract -= DisconnectTentacle;
     }
+
+    private void CalculateDirFromHead(AimData aimData)
+    {
+        if(aimData.aimMode == AimMode.Direction)
+        {
+            if(Vector2.SqrMagnitude(aimData.value) > 0.001f)
+            {
+                aimDirFromHead = aimData.value.normalized;
+            }   
+        }
+        else 
+        {
+            Vector2 mouseWorldPos = mainCam.ScreenToWorldPoint(aimData.value);
+            Vector2 aimDir = mouseWorldPos - (Vector2)transform.position;
+            if(Vector2.SqrMagnitude(aimDir) > 0.001f)
+            {
+                aimDirFromHead = aimDir.normalized;
+            }  
+        }
+    }
+
+    private void SetTentacleTargetDir(AimData aimData)
+    {
+        if(aimData.aimMode == AimMode.Direction)
+        {   
+            currentTentacle.SetTargetDir(aimData.value);
+        }
+        else 
+        {
+            Vector2 mouseWorldPos = mainCam.ScreenToWorldPoint(aimData.value);
+            currentTentacle.SetTargetDirFromPos(mouseWorldPos);
+        }
+    }
+
+    private void SetAimVisual()
+    {
+        if(currentTentacle != null)
+        {
+            dirSelectionGO.SetActive(false);
+        }
+        else 
+        {
+            dirSelectionGO.SetActive(true);
+        }
+    }
 }
+

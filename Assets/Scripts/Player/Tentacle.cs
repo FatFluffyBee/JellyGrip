@@ -60,6 +60,7 @@ public abstract class Tentacle : MonoBehaviour
     public event Action OnTentacleDestroyed;
     public event Action<Tentacle> OnForceRetract;
     private float segmentBeforeDelete;
+    protected Vector3 targetDir;
 
     protected List<MoveInput> moveInputs = new List<MoveInput>();
 
@@ -90,7 +91,6 @@ public abstract class Tentacle : MonoBehaviour
         //Add idle drift for head
         if(applyForces)
         {
-            //! dont handle input well, should have its own class
             Vector3 velocityTotal = Vector3.zero;
             Vector3 impulseTotal = Vector3.zero;
             foreach(IMoveGiver list in moveGivers)
@@ -116,9 +116,8 @@ public abstract class Tentacle : MonoBehaviour
         //Add force to head if expanding
         if(isExpanding || forceExpand)
         {
-            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            mousePos.z = 0;
-            newHeadPos += GetExpandDelta(mousePos);
+            AdvanceShootDirection(targetDir);
+            newHeadPos += ComputeExpansionDelta();
             isExpanding = false;
         }
 
@@ -161,13 +160,11 @@ public abstract class Tentacle : MonoBehaviour
         
     }
 
-    public void InitializeTentacle(TentacleManager manager, Transform root)
+    public void InitializeTentacle(TentacleManager manager, Transform root, Vector3 targetDir)
     {
         OnForceRetract += manager.DisconnectTentacle;
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        shootDir = mousePos - transform.position;
-        shootDir.z = 0;
-        shootDir.Normalize();
+        this.targetDir = targetDir;
+        shootDir = targetDir;
 
         tentacleHead = Instantiate(tentacleHeadPrefab, transform.position, Quaternion.identity).transform;
         tentacleHeadRb = tentacleHead.GetComponent<Rigidbody2D>();
@@ -258,17 +255,16 @@ public abstract class Tentacle : MonoBehaviour
         }
     }
 
-    public Vector3 GetExpandDelta(Vector3 worldPos)
+    private void AdvanceShootDirection(Vector3 expandDir)
     {
-        Vector3 targetDir = worldPos - basePoses[^1];
-        targetDir.z = 0;
-        targetDir.Normalize();
-
         float maxStep = maxAnglePerSecond * Time.deltaTime;
-        float angle = Vector2.SignedAngle(shootDir, targetDir);
+        float angle = Vector2.SignedAngle(shootDir, expandDir);
         shootDir = Quaternion.Euler(0, 0, Mathf.Clamp(angle, -maxStep, maxStep)) * shootDir;
         shootDir.Normalize();
+    }
 
+    public Vector3 ComputeExpansionDelta()
+    {
         return shootDir * shootSpeed * Time.deltaTime;
     }
 
@@ -413,6 +409,19 @@ public abstract class Tentacle : MonoBehaviour
     }
 
     public virtual void HandleHeadCollision(CollisionInfo colInfo){}
+
+    public void SetTargetDir(Vector3 targetDir)
+    {
+        this.targetDir = targetDir;
+    }
+
+    public void SetTargetDirFromPos(Vector3 targetPos)
+    {
+        Vector3 newTargetDir = targetPos - tentacleHead.position;
+        newTargetDir.ToV2Dir();
+        targetDir = newTargetDir;
+    }
+
 
     void OnDrawGizmos()
     {

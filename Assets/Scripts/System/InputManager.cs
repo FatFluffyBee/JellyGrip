@@ -121,6 +121,21 @@ public class InputManager : MonoBehaviour
 
     void OnAiming(InputAction.CallbackContext context)
     {
-        gameplayHandler.Aiming(context.ReadValue<Vector2>());
+        Debug.Log(context.control.device is Gamepad);
+        AimData aimData = new AimData
+        {
+            value = context.ReadValue<Vector2>(),
+            aimMode = (context.control.device is Gamepad)? AimMode.Direction : AimMode.Position
+        };
+        gameplayHandler.Aiming(aimData);
     }
 }
+
+public enum AimMode {Direction, Position}
+
+public struct AimData
+{
+    public Vector2 value;
+    public AimMode aimMode;
+}
+

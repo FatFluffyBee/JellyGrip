@@ -10,7 +10,7 @@ public interface IGameplayHandler
     public void SecondaryFire();
     public void SecondaryFireRelease();
 
-    public void Aiming(Vector2 input);
+    public void Aiming(AimData aimData);
 
     public void OnWeaponChange(bool up);
 }

@@ -26,7 +26,7 @@
                 },
                 {
                     "name": "Aiming",
-                    "type": "Value",
+                    "type": "PassThrough",
                     "id": "0a7ef69f-7075-4896-b30a-ab79e2a3653f",
                     "expectedControlType": "Vector2",
                     "processors": "",
@@ -58,7 +58,7 @@
                 {
                     "name": "",
                     "id": "67a90d6e-c3ea-4ade-8ba0-551ef476f998",
-                    "path": "<Gamepad>/leftTrigger",
+                    "path": "<Gamepad>/rightTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
@@ -80,22 +80,11 @@
                 {
                     "name": "",
                     "id": "676de6b8-2c18-4a32-b0b2-f987468debf8",
-                    "path": "<Gamepad>/rightTrigger",
+                    "path": "<Gamepad>/leftTrigger",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "SecondaryAction",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "8f871d1b-a165-4ebe-83ae-70940d8f00cd",
-                    "path": "<Mouse>/position",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "Aiming",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -106,6 +95,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
+                    "action": "Aiming",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "abe13e88-a050-4f52-a150-e90354b871ae",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
                     "action": "Aiming",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -139,6 +139,39 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
+                    "action": "ChangeWeapon",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "1D Axis",
+                    "id": "dd3c3f53-8c3b-4422-a78b-ca36c3a90e5b",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ChangeWeapon",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "8ba1f650-5e92-4068-be08-9eeb914fb8ce",
+                    "path": "<Gamepad>/dpad/left",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "ChangeWeapon",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "positive",
+                    "id": "da4fa495-693b-47b5-81ef-4252e8d70682",
+                    "path": "<Gamepad>/dpad/right",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
                     "action": "ChangeWeapon",
                     "isComposite": false,
                     "isPartOfComposite": true
