@@ -121,7 +121,6 @@ public class InputManager : MonoBehaviour
 
     void OnAiming(InputAction.CallbackContext context)
     {
-        Debug.Log(context.control.device is Gamepad);
         AimData aimData = new AimData
         {
             value = context.ReadValue<Vector2>(),

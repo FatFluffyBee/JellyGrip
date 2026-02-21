@@ -10,6 +10,12 @@ public class MoveTentacle : Tentacle
     private bool isGrabbing = false;
     private bool firstImpact = true;
 
+     public override void InitializeTentacle(Transform root, Vector3 targetDir)
+    {
+        base.InitializeTentacle(root, targetDir);
+        forceExpand = true;
+    }
+
     protected override void ApplyChildVisuals()
     {
         if(isGrabbing)

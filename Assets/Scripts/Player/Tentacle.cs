@@ -161,7 +161,7 @@ public abstract class Tentacle : MonoBehaviour
         
     }
 
-    public void InitializeTentacle(Transform root, Vector3 targetDir)
+    public virtual void InitializeTentacle(Transform root, Vector3 targetDir)
     {
         this.targetDir = targetDir;
         shootDir = targetDir;
@@ -384,6 +384,7 @@ public abstract class Tentacle : MonoBehaviour
     protected void DestroyTentacle()
     {
         OnTentacleDestroyed?.Invoke();
+        OnForceRetract?.Invoke(this);
 
         AudioManager.Instance.PlayOneShot(retractTentacle);
         CleanUp();
