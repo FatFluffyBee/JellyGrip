@@ -26,7 +26,6 @@ public class ScreenShake : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(shakers.Count);
         Vector2 offset = Vector2.zero;
 
         if(shakers.Count > 0)
@@ -42,7 +41,6 @@ public class ScreenShake : MonoBehaviour
         }
 
         screenshakePivot.transform.localPosition = offset;
-        Debug.Log(offset);
     }
 
     private Vector2 ShakeFunction(ShakeObject obj)

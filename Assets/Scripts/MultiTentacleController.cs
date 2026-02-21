@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
+public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandler
 {
     [SerializeField] private Transform launchPos;
     [SerializeField] private List<GameObject> tentaclePrefabs;
@@ -9,8 +9,9 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
     [SerializeField] private SpriteRenderer headSpriteSelection;
 
     [SerializeField] private List<Sprite> tentacleHeads;
+    [SerializeField] private int nMaxTentacles;
 
-    private Tentacle currentTentacle;
+    private List<Tentacle> tentacles = new List<Tentacle>();
     private int tentacleIndex = 0;
     private List<MoveInput> moveInputs = new List<MoveInput>();
     private bool primaryFireStarted = false;
@@ -32,30 +33,37 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
 
     void Update()
     {
-        if(currentTentacle != null)
+        Debug.Log("Tentacle Count :" + tentacles.Count);
+        if(tentacles.Count > 0)
         {
-            SetTentacleTargetDir(lastAimInput);
+            SetTentaclesTargetDir(lastAimInput);
         }
         SetAimVisual();
     }
 
     public void PrimaryFirePressed()
     {
-        if(!primaryFireStarted && currentTentacle == null)
+        if(!primaryFireStarted)
         {
-            currentTentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
-            currentTentacle.InitializeTentacle(launchPos, aimDirFromHead);
-            currentTentacle.OnForceRetract += DisconnectTentacle;
+            if(tentacles.Count >= nMaxTentacles)
+            {
+                tentacles[0].ForceRetract();
+            }
+
+            Tentacle tentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
+            tentacle.InitializeTentacle(launchPos, aimDirFromHead);
+            tentacle.OnForceRetract += DisconnectTentacle;
+            tentacles.Add(tentacle);
         }
         primaryFireStarted = true;
     }
 
     public void PrimaryFire()
     {
-        if(currentTentacle != null)
+       /* if(currentTentacle != null)
         {
             currentTentacle.TryExpand();
-        }  
+        }  */
     }
 
     public void PrimaryFireRelease()
@@ -65,12 +73,15 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
 
     public void SecondaryFirePressed()
     {
-        
+        if(tentacles.Count > 0)
+        {
+            tentacles[0].ForceRetract();
+        }
     }
 
     public void SecondaryFire()
     {
-        if(blockRetractationUntilRelease)
+       /* if(blockRetractationUntilRelease)
         {
             return;
         }
@@ -82,12 +93,12 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
         else
         {
             blockRetractationUntilRelease = true;
-        }
+        }*/
     }
 
     public void SecondaryFireRelease()
     {
-        blockRetractationUntilRelease = false;
+       // blockRetractationUntilRelease = false;
     }
 
     public void Aiming(AimData aimData)
@@ -104,7 +115,7 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
 
     public void OnWeaponChange(bool up)
     {
-        if(currentTentacle == null)
+        /*if(currentTentacle == null)
         {
             if(up)
             {
@@ -118,7 +129,7 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
         else
         {
             RetractAllTentacles();
-        }
+        }*/
     }
 
     public void ChangeTentacleIndex(int index)
@@ -139,30 +150,36 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
     public List<MoveInput> GetDesiredMovement()
     {
         moveInputs.Clear();
-        if(currentTentacle != null)
+        if(tentacles.Count > 0)
         {
-            moveInputs.AddRange(currentTentacle.GetDesiredMovement());
+            foreach(Tentacle e in tentacles)
+            {
+                moveInputs.AddRange(e.GetDesiredMovement());
+            }
         }
-        
+   
         return moveInputs;
     }
 
     public void RetractAllTentacles()
     {
-        if(currentTentacle != null)        
+        if(tentacles.Count > 0)
         {
-            currentTentacle.ForceRetract();
+            foreach(Tentacle e in tentacles)
+            {
+                e.ForceRetract();
+            }
         }
     }
 
-    public void DisconnectTentacle(Tentacle tentacle)
+    public void DisconnectTentacle(Tentacle toRemoveTentacle)
     {
         Debug.Log("Disconnecting Tentacle");
-        if(currentTentacle == tentacle)
+        if(tentacles.Contains(toRemoveTentacle));
         {
-            currentTentacle = null;
+            tentacles.Remove(toRemoveTentacle);
         }
-        tentacle.OnForceRetract -= DisconnectTentacle;
+        toRemoveTentacle.OnForceRetract -= DisconnectTentacle;
     }
 
     private void CalculateDirFromHead(AimData aimData)
@@ -185,22 +202,28 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
         }
     }
 
-    private void SetTentacleTargetDir(AimData aimData)
+    private void SetTentaclesTargetDir(AimData aimData)
     {
         if(aimData.aimMode == AimMode.Direction)
         {   
-            currentTentacle.SetTargetDir(aimData.value);
+            foreach(Tentacle currentTentacle in tentacles)
+            {
+                currentTentacle.SetTargetDir(aimData.value);
+            }
         }
         else 
         {
-            Vector2 mouseWorldPos = mainCam.ScreenToWorldPoint(aimData.value);
-            currentTentacle.SetTargetDirFromPos(mouseWorldPos);
+            foreach(Tentacle currentTentacle in tentacles)
+            {
+                Vector2 mouseWorldPos = mainCam.ScreenToWorldPoint(aimData.value);
+                currentTentacle.SetTargetDirFromPos(mouseWorldPos);
+            }
         }
     }
 
     private void SetAimVisual()
     {
-        if(currentTentacle != null)
+        if(tentacles.Count >= nMaxTentacles)
         {
             dirSelectionGO.SetActive(false);
         }
