@@ -3,29 +3,38 @@ using UnityEngine;
 
 public class MoveTentacle : Tentacle
 {
-    [Header("Move Player")]
-    [SerializeField] private float initialMoveStrenght;
-    [SerializeField] private float moveStrenghtOverTime;
+    [Header("Auto Retract")]
+    [SerializeField] private bool retractWhenOnTarget;
+    [SerializeField] private float targetReachDistance = 0.5f;
+
+    [Header("Pull Force")]
+    [SerializeField] private float initialPullStrenght;
+    [SerializeField] private float pullStrenghtOverTime;
+
+    [SerializeField] private float maxRangeWhenGrabbing = 7;
 
     private bool isGrabbing = false;
     private bool firstImpact = true;
 
-     public override void InitializeTentacle(Transform root, Vector3 targetDir)
+    public override void InitializeTentacle(Transform root, Vector3 targetDir)
     {
         base.InitializeTentacle(root, targetDir);
         forceExpand = true;
     }
 
-    protected override void ApplyChildVisuals()
+    protected override void ApplyChildVisuals() //! first thing to refactor
     {
         if(isGrabbing)
         {
-            if(Vector2.Distance(root.position, tentacleHead.position) < 0.5f)
+            if(retractWhenOnTarget)
             {
-                DestroyTentacle();
-                return;
+                if(Vector2.Distance(root.position, tentacleHead.position) < targetReachDistance)
+                {
+                    DestroyTentacle();
+                    return;
+                }
             }
-
+            
             float targetSegmentSize = Vector2.Distance(root.position, tentacleHead.position) / (basePoses.Count - 1) * 1f;
             currentSegmentSize = Mathf.Lerp(currentSegmentSize, targetSegmentSize, 100f * Time.deltaTime);
         }
@@ -66,11 +75,11 @@ public class MoveTentacle : Tentacle
 
             if(firstImpact)
             {
-                moveInputs.Add(new MoveInput(dirToRoot * initialMoveStrenght, MoveType.Impulse));
+                moveInputs.Add(new MoveInput(dirToRoot * initialPullStrenght, MoveType.Impulse));
                 firstImpact = false;
             }
 
-            moveInputs.Add(new MoveInput(dirToRoot * moveStrenghtOverTime, MoveType.Velocity));
+            moveInputs.Add(new MoveInput(dirToRoot * pullStrenghtOverTime, MoveType.Velocity));
         }
 
         moveInputs.Add(new MoveInput(Vector3.zero, MoveType.Velocity));
@@ -98,6 +107,7 @@ public class MoveTentacle : Tentacle
         forceExpand = false;
         canExpand = false;
         wiggleAmplitude /= 2f;
+        maxTentacleRange = maxRangeWhenGrabbing;
     }
 
     public void OnInitialWallHitFeedback(CollisionInfo colInfo)

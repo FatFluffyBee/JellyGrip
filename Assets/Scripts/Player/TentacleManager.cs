@@ -7,14 +7,14 @@ public class TentacleManager : MonoBehaviour, IMoveGiver, IGameplayHandler
     [SerializeField] private List<GameObject> tentaclePrefabs;
     [SerializeField] private GameObject dirSelectionGO;
     [SerializeField] private SpriteRenderer headSpriteSelection;
-
     [SerializeField] private List<Sprite> tentacleHeads;
 
     private Tentacle currentTentacle;
     private int tentacleIndex = 0;
-    private List<MoveInput> moveInputs = new List<MoveInput>();
+    
     private bool primaryFireStarted = false;
     private bool blockRetractationUntilRelease = false;
+    private List<MoveInput> moveInputs = new List<MoveInput>();
 
     private Camera mainCam;
     private AimData lastAimInput;
