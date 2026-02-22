@@ -51,6 +51,8 @@ MonoBehaviour:
   maxAnglePerSecond: 30
   retractSpeed: 30
   lengthBeforeDelete: 0.3
+  maxTentacleRange: 5
+  autoRetractOnRangeReach: 1
   wiggleSpeed: 2
   wiggleAmplitude: 0.1
   wiggleFrequency: 0.2
