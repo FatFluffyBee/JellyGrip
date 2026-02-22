@@ -15,6 +15,10 @@ public abstract class Tentacle : MonoBehaviour
     [SerializeField] protected float retractSpeed;
     [SerializeField] protected float lengthBeforeDelete = 0.5f;
 
+    [Header("Range")]
+    [SerializeField] protected float maxTentacleRange = 5f;
+    [SerializeField] protected bool autoRetractOnRangeReach;
+
     [Header("Wiggle")]
     [SerializeField] protected float wiggleSpeed;
     [SerializeField] protected float wiggleAmplitude;
@@ -43,27 +47,32 @@ public abstract class Tentacle : MonoBehaviour
     protected bool isRetracting = false;
     protected bool forceRetract = false;
     protected bool applyForces = true;
+    protected bool hasReachMaxRange = false;
 
     protected Vector3 shootDir;
+    protected Vector3 targetDir;
+    protected float currentSegmentSize; 
+    private float segmentBeforeDelete;
+    private float tentacleLength;
+    public bool IsDead {get; private set;}
+
     protected List<Vector3> basePoses = new List<Vector3>();
     protected List<Vector3> targetPoses = new List<Vector3>(); //wiggled ones
     protected List<Vector3> currentPoses = new List<Vector3>();
     protected List<GameObject> segments = new List<GameObject>();
+
+
     protected Rigidbody2D tentacleHeadRb;
     protected Transform tentacleHead;
-    private List<IMoveGiver> moveGivers = new List<IMoveGiver>();
     private TentacleHead tentacleHeadHandler;
-
     protected Transform root;
-    protected float currentSegmentSize; 
+
+    private List<IMoveGiver> moveGivers = new List<IMoveGiver>();
+    protected List<MoveInput> moveInputs = new List<MoveInput>();
+    
 
     public event Action OnTentacleDestroyed;
     public event Action<Tentacle> OnForceRetract;
-    private float segmentBeforeDelete;
-    protected Vector3 targetDir;
-    public bool IsDead {get; private set;}
-
-    protected List<MoveInput> moveInputs = new List<MoveInput>();
 
     public virtual void TryExpand(){}
 
@@ -114,14 +123,6 @@ public abstract class Tentacle : MonoBehaviour
             shootDir.Normalize();
         }
 
-        //Add force to head if expanding
-        if(isExpanding || forceExpand)
-        {
-            AdvanceShootDirection(targetDir);
-            newHeadPos += ComputeExpansionDelta();
-            isExpanding = false;
-        }
-
         if(isRetracting || forceRetract)
         {
             if(RetractAlongPath(newHeadPos, out Vector3 finalHeadPos))
@@ -138,6 +139,12 @@ public abstract class Tentacle : MonoBehaviour
                 shootDir = newShootDir.normalized;
             }
         }
+        else if((isExpanding || forceExpand) && !hasReachMaxRange)
+        {
+            AdvanceShootDirection(targetDir);
+            newHeadPos += ComputeExpansionDelta();
+            isExpanding = false;
+        }
 
         tentacleHeadRb.MovePosition(newHeadPos);
         tentacleHead.up = shootDir;
@@ -151,9 +158,10 @@ public abstract class Tentacle : MonoBehaviour
 
         ApplyChildVisuals();
 
-        CalculateWigglePoses();
+        UpdateWigglePosesAndTentacleLength();
         UpdateCurrentPoses();
         UpdateSegments();
+        UpdateRangeStatus();
     }
 
     protected virtual void ApplyChildVisuals()
@@ -193,22 +201,6 @@ public abstract class Tentacle : MonoBehaviour
     {
         moveInputs.Clear();
         return moveInputs;
-    }
-
-    private void UpdateSegments()
-    {
-        for(int i = 0; i < segments.Count; i++)
-        {
-            UpdateSegment(currentPoses[i], currentPoses[i+1], segments[i].transform);
-        }
-    }
-
-    private void UpdateCurrentPoses()
-    {
-        for(int i = 0; i < basePoses.Count; i++)
-        {
-            currentPoses[i] = Vector3.Lerp(currentPoses[i], targetPoses[i], Time.deltaTime * smoothFactor);
-        }
     }
 
     private void UpdateEndTentaclePoses()
@@ -266,6 +258,43 @@ public abstract class Tentacle : MonoBehaviour
     public Vector3 ComputeExpansionDelta()
     {
         return shootDir * shootSpeed * Time.deltaTime;
+    }
+
+    public void UpdateWigglePosesAndTentacleLength()
+    {
+        float cumulLength = 0f;
+        for(int i = 0; i < basePoses.Count-1; i++)
+        {
+            //we uses dist instead of i cause the FABRIK pass reduce the distance btw points and wiggle gets too noticeable
+            cumulLength += Vector2.Distance(basePoses[i], basePoses[i+1]);
+         
+            float lerpFactor = i * 1f / basePoses.Count;
+            float dampFactor = Mathf.Lerp(1f, endDampening, lerpFactor);
+            float relativeLength = cumulLength / minDistTentaclesPoints;
+            float offset = Mathf.Sin(Time.time * wiggleSpeed + relativeLength * wiggleFrequency) * wiggleAmplitude * dampFactor;
+
+            Vector3 dir = (basePoses[i+1] - basePoses[i]).normalized;
+            Vector3 wiggleDir = Vector3.Cross(dir, Vector3.forward);
+            targetPoses[i] = basePoses[i] + wiggleDir * offset;
+        }
+        targetPoses[^1] = basePoses[^1];
+        tentacleLength = cumulLength;
+    }
+
+    private void UpdateSegments()
+    {
+        for(int i = 0; i < segments.Count; i++)
+        {
+            UpdateSegment(currentPoses[i], currentPoses[i+1], segments[i].transform);
+        }
+    }
+
+    private void UpdateCurrentPoses()
+    {
+        for(int i = 0; i < currentPoses.Count; i++)
+        {
+            currentPoses[i] = Vector3.Lerp(currentPoses[i], targetPoses[i], Time.deltaTime * smoothFactor);
+        }
     }
 
     private void AddNewSegment(Vector3 start, Vector3 end)
@@ -361,25 +390,6 @@ public abstract class Tentacle : MonoBehaviour
         endPos = basePoses[^1];
         return false;
     }
-
-    public void CalculateWigglePoses()
-    {
-        float distTotal = 0f;
-        for(int i = 0; i < basePoses.Count-1; i++)
-        {
-            //we uses dist instead of i cause the FABRIK pass reduce the distance btw points and wiggle gets too noticeable
-            distTotal += Vector2.Distance(basePoses[i], basePoses[i+1]) / minDistTentaclesPoints; ;
-         
-            float lerpFactor = i * 1f / basePoses.Count;
-            float dampFactor = Mathf.Lerp(1f, endDampening, lerpFactor);
-            float offset = Mathf.Sin(Time.time * wiggleSpeed + distTotal * wiggleFrequency) * wiggleAmplitude * dampFactor;
-
-            Vector3 dir = (basePoses[i+1] - basePoses[i]).normalized;
-            Vector3 wiggleDir = Vector3.Cross(dir, Vector3.forward);
-            targetPoses[i] = basePoses[i] + wiggleDir * offset;
-        }
-        targetPoses[^1] = basePoses[^1];
-    }
     
     protected void DestroyTentacle()
     {
@@ -421,6 +431,27 @@ public abstract class Tentacle : MonoBehaviour
         Vector3 newTargetDir = targetPos - tentacleHead.position;
         newTargetDir.ToV2Dir();
         targetDir = newTargetDir;
+    }
+
+    protected virtual void UpdateRangeStatus()
+    {
+        if(IsMaxRange(maxTentacleRange))
+        {
+            if(!hasReachMaxRange && autoRetractOnRangeReach)
+            {
+                forceRetract = true;
+            }
+            hasReachMaxRange = true;
+        }
+        else
+        {
+            hasReachMaxRange = false;
+        }
+    }
+
+    private bool IsMaxRange(float maxRange)
+    {
+        return tentacleLength >= maxRange;
     }
 
 
