@@ -55,6 +55,7 @@ public abstract class Tentacle : MonoBehaviour
     private float segmentBeforeDelete;
     private float tentacleLength;
     public bool IsDead {get; private set;}
+    public Vector2 HeadPos => (Vector2)tentacleHead.position;
 
     protected List<Vector3> basePoses = new List<Vector3>();
     protected List<Vector3> targetPoses = new List<Vector3>(); //wiggled ones

@@ -1,25 +1,36 @@
 using System.Collections.Generic;
+using System.Net.Sockets;
 using UnityEngine;
 
 public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandler
 {
+    [Header("Tentacles")]
     [SerializeField] private Transform launchPos;
     [SerializeField] private List<GameObject> tentaclePrefabs;
-    [SerializeField] private GameObject dirSelectionGO;
-    [SerializeField] private SpriteRenderer headSpriteSelection;
-
-    [SerializeField] private List<Sprite> tentacleHeads;
     [SerializeField] private int nMaxTentacles;
+
+    [Header("Selection Visuals")]
+    [SerializeField] private List<Sprite> tentacleHeadsSprite;
+    [SerializeField] private SpriteRenderer headSpriteSelection;
+    [SerializeField] private GameObject dirSelectionGO;
+    
+    [Header("Force Retract")]
+    [SerializeField] public SelectionMode retractSelectionMode;
+    [SerializeField] public bool retractIfTentacleLimitReached;
+
+
+    private bool primaryFireStarted = false;
+    private bool blockRetractationUntilRelease = false;
 
     private List<Tentacle> tentacles = new List<Tentacle>();
     private int tentacleIndex = 0;
     private List<MoveInput> moveInputs = new List<MoveInput>();
-    private bool primaryFireStarted = false;
-    private bool blockRetractationUntilRelease = false;
+
+    private AimData lastAimInput;
+    private Vector2 aimDirFromBody;
 
     private Camera mainCam;
-    private AimData lastAimInput;
-    private Vector2 aimDirFromHead;
+    public enum SelectionMode {Queue, Stack, Nearest};
     
     private void Awake()
     {
@@ -28,17 +39,16 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
 
     void Start()
     {
-        headSpriteSelection.sprite = tentacleHeads[0];
+        headSpriteSelection.sprite = tentacleHeadsSprite[0];
     }
 
     void Update()
     {
-        Debug.Log("Tentacle Count :" + tentacles.Count);
         if(tentacles.Count > 0)
         {
             SetTentaclesTargetDir(lastAimInput);
         }
-        SetAimVisual();
+        SetAimVisualFeedback();
     }
 
     public void PrimaryFirePressed()
@@ -47,11 +57,17 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
         {
             if(tentacles.Count >= nMaxTentacles)
             {
-                tentacles[0].ForceRetract();
+                if(!retractIfTentacleLimitReached)
+                {
+                    return;
+                }
+
+                int index = SelectTentacle(SelectionMode.Queue, tentacles, aimDirFromBody);
+                tentacles[index].ForceRetract();
             }
 
             Tentacle tentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
-            tentacle.InitializeTentacle(launchPos, aimDirFromHead);
+            tentacle.InitializeTentacle(launchPos, aimDirFromBody);
             tentacle.OnForceRetract += DisconnectTentacle;
             tentacles.Add(tentacle);
         }
@@ -60,10 +76,10 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
 
     public void PrimaryFire()
     {
-       /* if(currentTentacle != null)
+        if(tentacles.Count > 0)
         {
-            currentTentacle.TryExpand();
-        }  */
+            tentacles[^1].TryExpand();
+        }  
     }
 
     public void PrimaryFireRelease()
@@ -75,37 +91,26 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
     {
         if(tentacles.Count > 0)
         {
-            tentacles[0].ForceRetract();
+            int index = SelectTentacle(retractSelectionMode, tentacles, aimDirFromBody);
+            tentacles[index].ForceRetract();
         }
     }
 
     public void SecondaryFire()
     {
-       /* if(blockRetractationUntilRelease)
-        {
-            return;
-        }
 
-        if(currentTentacle != null)
-        {
-            currentTentacle.TryRetract();
-        }
-        else
-        {
-            blockRetractationUntilRelease = true;
-        }*/
     }
 
     public void SecondaryFireRelease()
     {
-       // blockRetractationUntilRelease = false;
+       
     }
 
     public void Aiming(AimData aimData)
     {
         lastAimInput = aimData;
-        CalculateDirFromHead(lastAimInput);
-        SetAimingVisualDir(aimDirFromHead);
+        CalculateAimDirFromBody(lastAimInput);
+        SetAimingVisualDir(aimDirFromBody);
     }
 
     public void SetAimingVisualDir(Vector2 aimDir)
@@ -115,36 +120,29 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
 
     public void OnWeaponChange(bool up)
     {
-        /*if(currentTentacle == null)
+        if(up)
         {
-            if(up)
-            {
-                ChangeTentacleIndex(tentacleIndex + 1);
-            } 
-            else
-            {
-                ChangeTentacleIndex(tentacleIndex - 1);
-            } 
+            ChangeTentacleIndex(tentacleIndex + 1);
         } 
         else
         {
-            RetractAllTentacles();
-        }*/
+            ChangeTentacleIndex(tentacleIndex - 1);
+        } 
     }
 
     public void ChangeTentacleIndex(int index)
     {
         if(index < 0)
         {
-           index = tentacleHeads.Count - 1;
+           index = tentacleHeadsSprite.Count - 1;
         }
-        else if(index >= tentacleHeads.Count)
+        else if(index >= tentacleHeadsSprite.Count)
         {
             index = 0;
         }
 
         tentacleIndex = index;
-        headSpriteSelection.sprite = tentacleHeads[tentacleIndex];
+        headSpriteSelection.sprite = tentacleHeadsSprite[tentacleIndex];
     }
 
     public List<MoveInput> GetDesiredMovement()
@@ -182,13 +180,14 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
         toRemoveTentacle.OnForceRetract -= DisconnectTentacle;
     }
 
-    private void CalculateDirFromHead(AimData aimData)
+    //Aim direction 
+    private void CalculateAimDirFromBody(AimData aimData)
     {
         if(aimData.aimMode == AimMode.Direction)
         {
             if(Vector2.SqrMagnitude(aimData.value) > 0.001f)
             {
-                aimDirFromHead = aimData.value.normalized;
+                aimDirFromBody = aimData.value.normalized;
             }   
         }
         else 
@@ -197,7 +196,7 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
             Vector2 aimDir = mouseWorldPos - (Vector2)transform.position;
             if(Vector2.SqrMagnitude(aimDir) > 0.001f)
             {
-                aimDirFromHead = aimDir.normalized;
+                aimDirFromBody = aimDir.normalized;
             }  
         }
     }
@@ -221,7 +220,7 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
         }
     }
 
-    private void SetAimVisual()
+    private void SetAimVisualFeedback()
     {
         if(tentacles.Count >= nMaxTentacles)
         {
@@ -231,6 +230,48 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
         {
             dirSelectionGO.SetActive(true);
         }
+    }
+
+    //Tentacle Selection
+    private int SelectTentacle(SelectionMode selectionMode, List<Tentacle> tentacles, Vector2 aimDir)
+    {
+        return selectionMode switch
+        {
+            SelectionMode.Queue => 0,
+            SelectionMode.Stack => tentacles.Count - 1,
+            SelectionMode.Nearest => GetNearestTentacle(tentacles, aimDir)
+        };
+    }
+
+    private int GetNearestTentacle(List<Tentacle> tentacles, Vector2 selectDir)
+    {
+        if(tentacles.Count == 0)
+        {
+            Debug.LogError("List is empty this shouldn't fire");
+            return -1;
+        }
+
+        if(tentacles.Count == 1)
+        {
+            return 0;
+        }
+            
+        int index = 0;
+        float dot = -1f;
+
+        for(int i = 0; i < tentacles.Count; i++)
+        {
+            Vector2 dirBodyToHead = (tentacles[i].HeadPos - (Vector2)transform.position).normalized;
+            float newDot = Vector2.Dot(selectDir, dirBodyToHead);
+
+            if(newDot > dot)
+            {
+                dot = newDot;
+                index = i;
+            }
+        }
+        
+        return index;
     }
 }
 
