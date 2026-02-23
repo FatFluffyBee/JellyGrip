@@ -9,8 +9,9 @@ public class MoveTentacle : Tentacle
 
     [Header("Pull Force")]
     [SerializeField] private float initialPullStrenght;
-    [SerializeField] private float pullStrenghtOverTime;
-
+    [SerializeField] private float maxPullStrenght;
+    [SerializeField] private float minPullStrength;
+    
     [SerializeField] private float maxRangeWhenGrabbing = 7;
 
     private bool isGrabbing = false;
@@ -70,20 +71,30 @@ public class MoveTentacle : Tentacle
         List<MoveInput> moveInputs = new List<MoveInput>();
         if(isGrabbing)
         {
-            Vector3 dirToRoot = tentacleHead.position - root.position;
-            dirToRoot.ToV2Dir();
+            Vector2 rootToHead = tentacleHead.position - root.position;
+            Vector2 pullDir = rootToHead.normalized;
 
             if(firstImpact)
             {
-                moveInputs.Add(new MoveInput(dirToRoot * initialPullStrenght, MoveType.Impulse));
+                moveInputs.Add(new MoveInput(pullDir * initialPullStrenght, MoveType.Impulse));
                 firstImpact = false;
             }
 
-            moveInputs.Add(new MoveInput(dirToRoot * pullStrenghtOverTime, MoveType.Velocity));
+            float pullForce = CalculatePullForce(rootToHead.magnitude);
+            moveInputs.Add(new MoveInput(pullDir * pullForce, MoveType.Acceleration));
         }
 
-        moveInputs.Add(new MoveInput(Vector3.zero, MoveType.Velocity));
+        moveInputs.Add(new MoveInput(Vector3.zero, MoveType.Acceleration));
         return moveInputs;
+    }
+
+    private float CalculatePullForce(float tentacleLength)
+    {
+        float force = Mathf.InverseLerp(targetReachDistance, maxRangeWhenGrabbing, tentacleLength);
+        //force = 1 - (1 - force) * (1 - force) * (1 - force);
+        force = Mathf.Lerp(minPullStrength, maxPullStrenght, force);
+        Debug.Log(force);
+        return force;
     }
 
     public override void HandleHeadCollision(CollisionInfo colInfo)

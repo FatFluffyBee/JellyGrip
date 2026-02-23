@@ -51,6 +51,8 @@ MonoBehaviour:
   maxAnglePerSecond: 180
   retractSpeed: 10
   lengthBeforeDelete: 0.3
+  maxTentacleRange: 100
+  autoRetractOnRangeReach: 0
   wiggleSpeed: 2
   wiggleAmplitude: 0.1
   wiggleFrequency: 0.2
@@ -63,5 +65,6 @@ MonoBehaviour:
   shakeEvent: {fileID: 11400000, guid: d0fe239685a0e60459fcdc3f0a90aaf0, type: 2}
   shakeDuration: 0
   shakeIntensity: 0
+  shakeFrequency: 0
   activationRange: 0.5
   checkIntervals: 0.1
