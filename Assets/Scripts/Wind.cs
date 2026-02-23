@@ -23,7 +23,7 @@ public class Wind : MonoBehaviour, IMoveGiver
     public List<MoveInput> GetDesiredMovement()
     {
         moveInputs.Clear();
-        moveInputs.Add(new MoveInput(windDirection.normalized * windStrength, MoveType.Velocity));
+        moveInputs.Add(new MoveInput(windDirection.normalized * windStrength, MoveType.Acceleration));
         return moveInputs;
     }
 

@@ -108,7 +108,7 @@ public abstract class Tentacle : MonoBehaviour
             {
                 foreach(MoveInput e in list.GetDesiredMovement())
                 {
-                    if(e.moveType == MoveType.Velocity)
+                    if(e.moveType == MoveType.Acceleration)
                         velocityTotal += e.input;
                     else if(e.moveType == MoveType.Impulse)
                         impulseTotal += e.input;

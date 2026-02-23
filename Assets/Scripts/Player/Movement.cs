@@ -5,12 +5,21 @@ using UnityEngine;
 public class Movement : MonoBehaviour, IMoveReceiver
 {
     //for test purpose only
-    [SerializeField] private List<IMoveGiver> moveGivers = new List<IMoveGiver>();
-    [SerializeField] private float decayRate;
-    [SerializeField] private float buildUpRate;
+    
+
+    [Header("Constraints")]
+    [SerializeField] private DecayMode decayMode;
+    [SerializeField] private float velocityDecayRate;
     [SerializeField] private float maxSpeed;
+
+    [Header("Debug")]
+    [SerializeField] private float debugIntensity;
+
     private Vector3 currentVelocity;
+    private List<IMoveGiver> moveGivers = new List<IMoveGiver>();
+
     private Rigidbody2D rb;
+    private enum DecayMode {Linear, Exponential};
 
     private void Awake()
     {
@@ -21,38 +30,58 @@ public class Movement : MonoBehaviour, IMoveReceiver
     {
         currentVelocity = rb.linearVelocity;
 
-        Vector3 newVelocity = Vector3.zero;
+        MoveIntent moveIntent = GatherMoveGiverInput();
+        AddMoveIntent(moveIntent);
+        ApplyDecay();
+        currentVelocity = Vector3.ClampMagnitude(currentVelocity, maxSpeed);
+        rb.linearVelocity = currentVelocity;
+    }
+
+    private MoveIntent GatherMoveGiverInput()
+    {
+        DisplayDebugLine(currentVelocity, Color.yellow);
+
+        MoveIntent forces = new MoveIntent();
+
         foreach(IMoveGiver moveGiver in moveGivers)
         {
             foreach(MoveInput e in moveGiver.GetDesiredMovement())
             {
                 switch(e.moveType)
                 {
-                    case MoveType.Velocity:
-                        newVelocity += e.input;
+                    case MoveType.Acceleration:
+                        DisplayDebugLine(e.input, Color.green);
+                        forces.acceleration += e.input;
                         break;
                     
                     case MoveType.Impulse:
-                        currentVelocity += e.input;
+                        DisplayDebugLine(e.input, Color.red);
+                        forces.velocity += e.input;
                         break;
                 }
             }
-            
         }
+        return forces;
+    } 
 
-        currentVelocity = Vector3.ClampMagnitude(currentVelocity, maxSpeed);
-        newVelocity = Vector3.ClampMagnitude(newVelocity, maxSpeed);
-
-        if(currentVelocity.sqrMagnitude < newVelocity.sqrMagnitude)
+    private void AddMoveIntent(MoveIntent moveIntent)
+    {
+        currentVelocity += moveIntent.velocity;
+        currentVelocity += moveIntent.acceleration * Time.deltaTime;
+    }
+   
+    private void ApplyDecay()
+    {
+        switch(decayMode)
         {
-            currentVelocity = Vector3.MoveTowards(currentVelocity, newVelocity, Time.deltaTime * buildUpRate);
-        }
-        else
-        {
-            currentVelocity = Vector3.MoveTowards(currentVelocity, newVelocity, Time.deltaTime * decayRate);
-        }
+            case DecayMode.Linear:
+                currentVelocity *= 1 - velocityDecayRate * Time.deltaTime;
+                break;
 
-        rb.linearVelocity = currentVelocity;
+            case DecayMode.Exponential:
+                currentVelocity *= Mathf.Exp(-velocityDecayRate * Time.deltaTime);
+                break;
+        }
     }
 
     public void AddMovementSource(IMoveGiver giver)
@@ -70,9 +99,26 @@ public class Movement : MonoBehaviour, IMoveReceiver
             moveGivers.Remove(giver);
         }
     }
+
+    private void DisplayDebugLine(Vector3 moveVector, Color color)
+    {
+        Debug.DrawLine(transform.position, transform.position + moveVector * debugIntensity, color);
+    }
+
+    private struct MoveIntent
+    {
+        public Vector3 acceleration;
+        public Vector3 velocity;
+
+        public MoveIntent(Vector3 acceleration, Vector3 velocity)
+        {
+            this.acceleration = acceleration;
+            this.velocity = velocity;
+        }
+    }
 }
 
-public enum MoveType {Velocity, Impulse, Override}
+public enum MoveType {Acceleration, Impulse, Override}
 public struct MoveInput
 {
     public Vector3 input;
