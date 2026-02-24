@@ -455,6 +455,16 @@ public abstract class Tentacle : MonoBehaviour
         return tentacleLength >= maxRange;
     }
 
+    public void OnSelected()
+    {
+        tentacleHead.GetComponent<SpriteRenderer>().color = Color.red;
+    }
+
+    public void OnDeselected()
+    {
+        tentacleHead.GetComponent<SpriteRenderer>().color = Color.white;
+    }
+
 
     void OnDrawGizmos()
     {
