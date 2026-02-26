@@ -33,6 +33,7 @@ public abstract class Tentacle : MonoBehaviour
 
     [Header("FX")]
     [SerializeField] protected GameObject wallHitFX;
+    [SerializeField] private HeadVisuals headVisuals;
 
     [Header("ScreenShake")]
     [SerializeField] protected ScreenshakeEventSO shakeEvent;
@@ -177,6 +178,7 @@ public abstract class Tentacle : MonoBehaviour
 
         tentacleHead = Instantiate(tentacleHeadPrefab, transform.position, Quaternion.identity).transform;
         tentacleHeadRb = tentacleHead.GetComponent<Rigidbody2D>();
+        headVisuals = tentacleHead.GetComponent<HeadVisuals>();
         this.root = root;
         
         tentacleHeadHandler = tentacleHead.GetComponent<TentacleHead>();
@@ -453,6 +455,16 @@ public abstract class Tentacle : MonoBehaviour
     private bool IsMaxRange(float maxRange)
     {
         return tentacleLength >= maxRange;
+    }
+
+    public void OnSelected()
+    {
+        headVisuals.SetSelected(true);
+    }
+
+    public void OnDeselected()
+    {
+        headVisuals.SetSelected(false);
     }
 
 

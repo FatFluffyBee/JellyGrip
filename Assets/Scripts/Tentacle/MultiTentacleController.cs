@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using UnityEngine;
@@ -28,6 +29,7 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
 
     private AimData lastAimInput;
     private Vector2 aimDirFromBody;
+    private Tentacle selectedTentacle; 
 
     private Camera mainCam;
     public enum SelectionMode {Queue, Stack, Nearest};
@@ -47,8 +49,11 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
         if(tentacles.Count > 0)
         {
             SetTentaclesTargetDir(lastAimInput);
+            SetSelectedTentacle();
         }
         SetAimVisualFeedback();
+        
+        
     }
 
     public void PrimaryFirePressed()
@@ -62,8 +67,8 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
                     return;
                 }
 
-                int index = SelectTentacle(SelectionMode.Queue, tentacles, aimDirFromBody);
-                tentacles[index].ForceRetract();
+                Tentacle tentacleToRetract = GetTentacleSelection(SelectionMode.Queue, tentacles, aimDirFromBody);
+                tentacleToRetract.ForceRetract();
             }
 
             Tentacle tentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
@@ -71,6 +76,7 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
             tentacle.OnForceRetract += DisconnectTentacle;
             tentacles.Add(tentacle);
         }
+
         primaryFireStarted = true;
     }
 
@@ -91,8 +97,8 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
     {
         if(tentacles.Count > 0)
         {
-            int index = SelectTentacle(retractSelectionMode, tentacles, aimDirFromBody);
-            tentacles[index].ForceRetract();
+            Tentacle tentacleToRetract = GetTentacleSelection(retractSelectionMode, tentacles, aimDirFromBody);
+            tentacleToRetract.ForceRetract();
         }
     }
 
@@ -116,6 +122,22 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
     public void SetAimingVisualDir(Vector2 aimDir)
     {
         dirSelectionGO.transform.up = -aimDir;
+    }
+
+    public void SetSelectedTentacle()
+    {
+        Tentacle newSelection = GetTentacleSelection(SelectionMode.Nearest, tentacles, aimDirFromBody);
+        
+        if(newSelection == selectedTentacle || newSelection == null)
+            return;
+
+        if(selectedTentacle != null)
+        {
+            selectedTentacle.OnDeselected();
+        }
+        
+        newSelection.OnSelected();
+        selectedTentacle = newSelection;
     }
 
     public void OnWeaponChange(bool up)
@@ -233,27 +255,31 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
     }
 
     //Tentacle Selection
-    private int SelectTentacle(SelectionMode selectionMode, List<Tentacle> tentacles, Vector2 aimDir)
+    private Tentacle GetTentacleSelection(SelectionMode selectionMode, List<Tentacle> tentacles, Vector2 aimDir)
     {
+        if(tentacles.Count == 0)
+            return null;
+
         return selectionMode switch
         {
-            SelectionMode.Queue => 0,
-            SelectionMode.Stack => tentacles.Count - 1,
-            SelectionMode.Nearest => GetNearestTentacle(tentacles, aimDir)
+            SelectionMode.Queue => tentacles[0],
+            SelectionMode.Stack => tentacles[tentacles.Count - 1],
+            SelectionMode.Nearest => GetNearestTentacle(tentacles, aimDir),
+            _ => null
         };
     }
 
-    private int GetNearestTentacle(List<Tentacle> tentacles, Vector2 selectDir)
+    private Tentacle GetNearestTentacle(List<Tentacle> tentacles, Vector2 selectDir)
     {
         if(tentacles.Count == 0)
         {
             Debug.LogError("List is empty this shouldn't fire");
-            return -1;
+            return null;
         }
 
         if(tentacles.Count == 1)
         {
-            return 0;
+            return tentacles[0];
         }
             
         int index = 0;
@@ -271,7 +297,7 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
             }
         }
         
-        return index;
+        return tentacles[index];
     }
 }
 

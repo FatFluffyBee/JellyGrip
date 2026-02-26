@@ -215,6 +215,7 @@ GameObject:
   - component: {fileID: 3505581489159812316}
   - component: {fileID: 430192975116315943}
   - component: {fileID: 7468179844699784460}
+  - component: {fileID: -8278194179682747207}
   m_Layer: 7
   m_Name: LanternHead
   m_TagString: Tentacle
@@ -252,8 +253,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47223604c75014d43b745cf7c6f45e46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shakeEvent: {fileID: 11400000, guid: d0fe239685a0e60459fcdc3f0a90aaf0, type: 2}
-  hitFx: {fileID: 6864083220550978062, guid: 9b34a1dd63f67b84b857e540c4f3b5ff, type: 3}
   spawnFxPoint: {fileID: 9218112954798425407}
 --- !u!114 &3505581489159812316
 MonoBehaviour:
@@ -345,3 +344,18 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
+--- !u!114 &-8278194179682747207
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7644811421491003815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dbc6903b4afc3748ac2c38b95c937e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sR: {fileID: 4788920715664483443}
+  baseSprite: {fileID: 21300000, guid: 0ce6b01846b88d44690dee2f0d34b1f8, type: 3}
+  selectedSprite: {fileID: 21300000, guid: c73bcaf236ff053468cde41e516ced0d, type: 3}

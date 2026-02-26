@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 1720cf6d885a29e46a001b32d68ac87a
+guid: 8f274a50d2db9bc458e84055ace12ef5
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -505937333620079673
-    second: Tentacle_Hook_0
+      213: -2415985382072995475
+    second: Tentacle_Spear_Selected_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Tentacle_Hook_0
+      name: Tentacle_Spear_Selected_0
       rect:
         serializedVersion: 2
-        x: 4
-        y: 4
-        width: 7
-        height: 7
+        x: 0
+        y: 0
+        width: 16
+        height: 16
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7c387f6fcac8af8f0800000000000000
-      internalID: -505937333620079673
+      spriteID: d61b00f6812b87ed0800000000000000
+      internalID: -2415985382072995475
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Tentacle_Hook_0: -505937333620079673
+      Tentacle_Spear_Selected_0: -2415985382072995475
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
