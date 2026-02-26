@@ -25,13 +25,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 154217336357340758}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.031, y: 0.126, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 1, w: 0}
+  m_LocalPosition: {x: -0.03, y: 0.138, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7783717275030199118}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 180}
 --- !u!212 &2342161392992479650
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -99,6 +99,7 @@ GameObject:
   - component: {fileID: 348765633079246267}
   - component: {fileID: 7576592308301404895}
   - component: {fileID: 8684887746403579810}
+  - component: {fileID: -2468275291156433180}
   m_Layer: 7
   m_Name: MoveHead
   m_TagString: Tentacle
@@ -135,8 +136,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47223604c75014d43b745cf7c6f45e46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shakeEvent: {fileID: 11400000, guid: d0fe239685a0e60459fcdc3f0a90aaf0, type: 2}
-  hitFx: {fileID: 6864083220550978062, guid: 9b34a1dd63f67b84b857e540c4f3b5ff, type: 3}
   spawnFxPoint: {fileID: 8099882835519374442}
 --- !u!58 &7576592308301404895
 CircleCollider2D:
@@ -201,6 +200,21 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
+--- !u!114 &-2468275291156433180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4423956220550280420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dbc6903b4afc3748ac2c38b95c937e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sR: {fileID: 2342161392992479650}
+  baseSprite: {fileID: 21300000, guid: 1720cf6d885a29e46a001b32d68ac87a, type: 3}
+  selectedSprite: {fileID: 21300000, guid: 9d2b8bd255cde374ca6cdc70c912e8eb, type: 3}
 --- !u!1 &9008774991711894486
 GameObject:
   m_ObjectHideFlags: 0
@@ -226,7 +240,7 @@ Transform:
   m_GameObject: {fileID: 9008774991711894486}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.169, z: 0}
+  m_LocalPosition: {x: -0.006, y: 0.291, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

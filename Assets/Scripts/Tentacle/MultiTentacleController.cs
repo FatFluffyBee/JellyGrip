@@ -49,10 +49,11 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
         if(tentacles.Count > 0)
         {
             SetTentaclesTargetDir(lastAimInput);
+            SetSelectedTentacle();
         }
         SetAimVisualFeedback();
         
-        SetSelectedTentacle();
+        
     }
 
     public void PrimaryFirePressed()
@@ -130,7 +131,11 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
         if(newSelection == selectedTentacle || newSelection == null)
             return;
 
-        selectedTentacle?.OnDeselected();
+        if(selectedTentacle != null)
+        {
+            selectedTentacle.OnDeselected();
+        }
+        
         newSelection.OnSelected();
         selectedTentacle = newSelection;
     }
@@ -252,26 +257,29 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
     //Tentacle Selection
     private Tentacle GetTentacleSelection(SelectionMode selectionMode, List<Tentacle> tentacles, Vector2 aimDir)
     {
+        if(tentacles.Count == 0)
+            return null;
+
         return selectionMode switch
         {
             SelectionMode.Queue => tentacles[0],
             SelectionMode.Stack => tentacles[tentacles.Count - 1],
-            SelectionMode.Nearest => tentacles[GetNearestTentacle(tentacles, aimDir)],
+            SelectionMode.Nearest => GetNearestTentacle(tentacles, aimDir),
             _ => null
         };
     }
 
-    private int GetNearestTentacle(List<Tentacle> tentacles, Vector2 selectDir)
+    private Tentacle GetNearestTentacle(List<Tentacle> tentacles, Vector2 selectDir)
     {
         if(tentacles.Count == 0)
         {
             Debug.LogError("List is empty this shouldn't fire");
-            return -1;
+            return null;
         }
 
         if(tentacles.Count == 1)
         {
-            return 0;
+            return tentacles[0];
         }
             
         int index = 0;
@@ -289,7 +297,7 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
             }
         }
         
-        return index;
+        return tentacles[index];
     }
 }
 

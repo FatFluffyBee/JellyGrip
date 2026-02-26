@@ -62,6 +62,7 @@ MonoBehaviour:
   retractTentacle: {fileID: 0}
   tentacleHitWall: {fileID: 0}
   wallHitFX: {fileID: 0}
+  headVisuals: {fileID: 0}
   shakeEvent: {fileID: 11400000, guid: d0fe239685a0e60459fcdc3f0a90aaf0, type: 2}
   shakeDuration: 0
   shakeIntensity: 0
