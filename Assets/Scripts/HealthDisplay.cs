@@ -3,14 +3,9 @@ using UnityEngine;
 
 public class HealthDisplay : MonoBehaviour
 {
+    [SerializeField] private Image image;
     [SerializeField] private Sprite lifeFull;
     [SerializeField] private Sprite lifeEmpty;
-    private Image image;
-
-    private void Start()
-    {
-        image = GetComponent<Image>();
-    }
 
     public void Activate()
     {

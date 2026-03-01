@@ -1,10 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.Net.Sockets;
 using UnityEngine;
 
 public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandler
 {
+    [SerializeField] private Movement movement;
+    [SerializeField] private HealthSystem hs;
+
     [Header("Tentacles")]
     [SerializeField] private Transform launchPos;
     [SerializeField] private List<GameObject> tentaclePrefabs;
@@ -17,7 +18,7 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
     
     [Header("Force Retract")]
     [SerializeField] public SelectionMode retractSelectionMode;
-    [SerializeField] public bool retractIfTentacleLimitReached;
+    [SerializeField] public bool retractTentacleIfLimitReached;
 
 
     private bool primaryFireStarted = false;
@@ -33,7 +34,21 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
 
     private Camera mainCam;
     public enum SelectionMode {Queue, Stack, Nearest};
-    
+
+    private void OnEnable()
+    {
+        hs.OnHit += RetractAllTentacles;
+        if(movement != null)
+        {
+            movement.AddMovementSource(this);
+        }
+    }
+
+    private void OnDisable()
+    {
+        hs.OnHit -= RetractAllTentacles;
+    }
+
     private void Awake()
     {
         mainCam = Camera.main;
@@ -52,32 +67,39 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
             SetSelectedTentacle();
         }
         SetAimVisualFeedback();
-        
-        
     }
 
     public void PrimaryFirePressed()
     {
-        if(!primaryFireStarted)
-        {
-            if(tentacles.Count >= nMaxTentacles)
-            {
-                if(!retractIfTentacleLimitReached)
-                {
-                    return;
-                }
-
-                Tentacle tentacleToRetract = GetTentacleSelection(SelectionMode.Queue, tentacles, aimDirFromBody);
-                tentacleToRetract.ForceRetract();
-            }
-
-            Tentacle tentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
-            tentacle.InitializeTentacle(launchPos, aimDirFromBody);
-            tentacle.OnForceRetract += DisconnectTentacle;
-            tentacles.Add(tentacle);
-        }
+        if(primaryFireStarted)
+            return;
 
         primaryFireStarted = true;
+
+
+        if(tentacles.Count >= nMaxTentacles)
+        {
+            if(!retractTentacleIfLimitReached)
+                return;
+
+            MakeSpaceForNewTentacle();
+        }
+
+        SpawnTentacle();
+    }
+
+    private void MakeSpaceForNewTentacle()
+    {
+        Tentacle tentacleToRetract = GetTentacleSelection(SelectionMode.Queue, tentacles, aimDirFromBody);
+        tentacleToRetract.ForceRetract();
+    }
+
+    private void SpawnTentacle()
+    {
+        Tentacle tentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
+        tentacle.InitializeTentacle(launchPos, aimDirFromBody);
+        tentacle.OnForceRetract += DisconnectTentacle;
+        tentacles.Add(tentacle);
     }
 
     public void PrimaryFire()

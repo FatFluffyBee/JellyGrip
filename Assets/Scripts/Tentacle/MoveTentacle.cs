@@ -91,9 +91,8 @@ public class MoveTentacle : Tentacle
     private float CalculatePullForce(float tentacleLength)
     {
         float force = Mathf.InverseLerp(targetReachDistance, maxRangeWhenGrabbing, tentacleLength);
-        //force = 1 - (1 - force) * (1 - force) * (1 - force);
+        force = 1 - (1 - force) * (1 - force) * (1 - force);
         force = Mathf.Lerp(minPullStrength, maxPullStrenght, force);
-        Debug.Log(force);
         return force;
     }
 
