@@ -98,41 +98,13 @@ public abstract class Tentacle : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Vector3 newHeadPos = tentacleHead.position;
-
-        //Add idle drift for head
-        if(applyForces)
-        {
-            Vector3 velocityTotal = Vector3.zero;
-            Vector3 impulseTotal = Vector3.zero;
-            foreach(IMoveGiver list in moveGivers)
-            {
-                foreach(MoveInput e in list.GetDesiredMovement())
-                {
-                    if(e.moveType == MoveType.Acceleration)
-                        velocityTotal += e.input;
-                    else if(e.moveType == MoveType.Impulse)
-                        impulseTotal += e.input;
-                }
-            }
-
-            newHeadPos += velocityTotal * Time.deltaTime + impulseTotal;
-
-            float t = velocityTotal.magnitude / 10f;
-            float maxStep = maxAnglePerSecond * Time.deltaTime * t;
-            float angle = Vector2.SignedAngle(shootDir, velocityTotal.normalized);
-            shootDir = Quaternion.Euler(0, 0, Mathf.Clamp(angle, -maxStep, maxStep)) * shootDir;
-            shootDir.Normalize();
-        }
+        Vector3 nextHeadPos = ComputeNextHeadPosAndDirFromForces();
 
         if(isRetracting || forceRetract)
         {
-            if(RetractAlongPath(newHeadPos, out Vector3 finalHeadPos))
-            {
-                DestroyTentacle();
-                return;
-            }
-            newHeadPos = finalHeadPos;
+           RetractTentacleHeadAlongPath(nextHeadPos);
+
+            nextHeadPos = basePoses[^1];
             isRetracting = false;
 
             Vector3 newShootDir = basePoses[^1] - basePoses[^2];
@@ -144,26 +116,31 @@ public abstract class Tentacle : MonoBehaviour
         else if((isExpanding || forceExpand) && !hasReachMaxRange)
         {
             AdvanceShootDirection(targetDir);
-            newHeadPos += ComputeExpansionDelta();
+            nextHeadPos += ComputeExpansionDelta();
             isExpanding = false;
         }
 
-        tentacleHeadRb.MovePosition(newHeadPos);
+        tentacleHeadRb.MovePosition(nextHeadPos);
         tentacleHead.up = shootDir;
     }
 
     private void LateUpdate()
     {   
-        UpdateStartTentaclePoses();
+        //The path is considered visuals for no
+        UpdateTentaclePathFromRootMovement();
+        UpdateTentaclePathFromHeadMovement();
 
-        UpdateEndTentaclePoses();
-
-        ApplyChildVisuals();
+        ApplyChildVisuals(); //I think this is weird from an architecture standpoint
 
         UpdateWigglePosesAndTentacleLength();
         UpdateCurrentPoses();
         UpdateSegments();
         UpdateRangeStatus();
+
+        if(CheckForDeath())
+        {
+            DestroyTentacle();
+        }
     }
 
     protected virtual void ApplyChildVisuals()
@@ -206,7 +183,39 @@ public abstract class Tentacle : MonoBehaviour
         return moveInputs;
     }
 
-    private void UpdateEndTentaclePoses()
+    private Vector3 ComputeNextHeadPosAndDirFromForces()
+    {
+        Vector3 nextHeadPos = tentacleHead.position;
+
+        //Add idle drift for head
+        if(applyForces)
+        {
+            Vector3 velocityTotal = Vector3.zero;
+            Vector3 impulseTotal = Vector3.zero;
+            foreach(IMoveGiver list in moveGivers)
+            {
+                foreach(MoveInput e in list.GetDesiredMovement())
+                {
+                    if(e.moveType == MoveType.Acceleration)
+                        velocityTotal += e.input;
+                    else if(e.moveType == MoveType.Impulse)
+                        impulseTotal += e.input;
+                }
+            }
+
+            nextHeadPos += velocityTotal * Time.deltaTime + impulseTotal;
+
+            //not a big fan of how dir is influenced by velocity, and it's even moved by others scripts
+            float t = velocityTotal.magnitude / 10f;
+            float maxStep = maxAnglePerSecond * Time.deltaTime * t;
+            float angle = Vector2.SignedAngle(shootDir, velocityTotal.normalized);
+            shootDir = Quaternion.Euler(0, 0, Mathf.Clamp(angle, -maxStep, maxStep)) * shootDir;
+            shootDir.Normalize();
+        }
+        return nextHeadPos;
+    }
+
+    private void UpdateTentaclePathFromHeadMovement()
     {
         basePoses[^1] = tentacleHead.position;
         float remainingDist = Vector2.Distance(basePoses[^1], basePoses[^2]);
@@ -228,7 +237,7 @@ public abstract class Tentacle : MonoBehaviour
         }
     }
 
-    private void UpdateStartTentaclePoses()
+    private void UpdateTentaclePathFromRootMovement()
     {
         basePoses[0] = root.position;
         float remainingDist = Vector2.Distance(basePoses[0], basePoses[1]);
@@ -346,24 +355,17 @@ public abstract class Tentacle : MonoBehaviour
         }
     }
 
-    //bool return if tentacle is fully retracted and can be destroyed so we can end the main process
-    public bool RetractAlongPath(Vector3 startPos, out Vector3 endPos)
+    public void RetractTentacleHeadAlongPath(Vector3 startPos)
     {       
         Vector3 currentPos;
         Vector3 nextPos;
-        endPos = startPos;
         basePoses[^1]= startPos;
 
         float remainingDist = retractSpeed * Time.deltaTime;
         int count = 0;
 
-        while(remainingDist > 0f && count <= 20)
+        while(remainingDist > 0f && count <= 20 && segments.Count >= 2)
         {
-            if(basePoses.Count < segmentBeforeDelete || segments.Count <= 2)
-            {
-                return true;
-            }
-
             count++;
             currentPos = basePoses[^1];
             nextPos = basePoses[^2];
@@ -385,12 +387,20 @@ public abstract class Tentacle : MonoBehaviour
                 currentPoses.RemoveAt(currentPoses.Count-1);
             }
 
-            if(count >= 5)
+            if(count >= 20)
             {
-                Debug.LogWarning("Count too high");
+                Debug.LogWarning("Too many retract iterations per frame");
             }
         }
-        endPos = basePoses[^1];
+    }
+
+    protected bool CheckForDeath()
+    {
+        if(basePoses.Count < segmentBeforeDelete || segments.Count <= 2)
+        {
+            return true;
+        }
+        
         return false;
     }
     

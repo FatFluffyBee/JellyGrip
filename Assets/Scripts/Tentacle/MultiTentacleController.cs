@@ -76,7 +76,6 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
 
         primaryFireStarted = true;
 
-
         if(tentacles.Count >= nMaxTentacles)
         {
             if(!retractTentacleIfLimitReached)
