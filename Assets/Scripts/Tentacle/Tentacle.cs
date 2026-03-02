@@ -396,9 +396,12 @@ public abstract class Tentacle : MonoBehaviour
 
     protected bool CheckForDeath()
     {
-        if(basePoses.Count < segmentBeforeDelete || segments.Count <= 2)
+        if(isRetracting || forceRetract)
         {
-            return true;
+            if(basePoses.Count < segmentBeforeDelete || segments.Count <= 2)
+            {
+                return true;
+            }
         }
         
         return false;
