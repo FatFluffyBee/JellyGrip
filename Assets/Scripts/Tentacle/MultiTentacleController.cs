@@ -205,12 +205,11 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
 
     public void RetractAllTentacles()
     {
-        if(tentacles.Count > 0)
+        for(int i = tentacles.Count - 1; i >= 0; i--)
         {
-            foreach(Tentacle e in tentacles)
-            {
+            Tentacle e = tentacles[i];
+            if(e != null)
                 e.ForceRetract();
-            }
         }
     }
 

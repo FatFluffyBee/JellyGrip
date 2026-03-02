@@ -416,7 +416,9 @@ public abstract class Tentacle : MonoBehaviour
 
     public virtual void ForceRetract()
     {
-        Debug.Log("Force Retracting Tentacle");
+        if(forceRetract)
+            return;
+
         forceRetract = true;
         tentacleHeadHandler.DisableCollider();
         OnForceRetract?.Invoke(this);
