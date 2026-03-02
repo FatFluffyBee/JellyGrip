@@ -1,35 +1,34 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class HealthSystem : MonoBehaviour
 {
-    [SerializeField] private List<HealthDisplay> healthDisplay;
     [SerializeField] private int maxHealth;
     private int currentHealth;
     public event Action OnDeath;
+    public event Action OnHit;
 
     private void Start()
     {
         currentHealth = maxHealth;   
-        Updatehealth(currentHealth);
-        OnDeath += () => Debug.Log("Dead");
+        UpdateHealthVisuals(currentHealth);
     }
 
-    public void TakeDamage(int damage)
+    public virtual void TakeDamage(int damage)
     {
         currentHealth -= damage;
 
         if(currentHealth <= 0)
         {
             currentHealth = 0;
-            Updatehealth(0);
+            UpdateHealthVisuals(0);
             OnDeath?.Invoke();
             return;
         }
 
-        Updatehealth(currentHealth);
+        OnHit?.Invoke();
+        UpdateHealthVisuals(currentHealth);
     }
 
     public void Heal(int healthGain)
@@ -41,19 +40,11 @@ public class HealthSystem : MonoBehaviour
             currentHealth = maxHealth;
         }
 
-        Updatehealth(currentHealth);
+        UpdateHealthVisuals(currentHealth);
     }
 
-    public void Updatehealth(int health)
+    protected virtual void UpdateHealthVisuals(int health)
     {
-        for(int i = 0; i < health; i++)
-        {
-            healthDisplay[i].Activate();
-        }
-
-        for(int i = health; i < healthDisplay.Count; i++)
-        {
-            healthDisplay[i].Deactivate();
-        }
+        
     }
 }
