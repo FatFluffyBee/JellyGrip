@@ -50,7 +50,7 @@ public class Eel : MonoBehaviour
                 {
                     Debug.Log("Target detected, starting attack");
                     currentState = State.Warning;
-                    //attackSignPS.Play();
+                    attackSignPS.Play();
                     timer = 0f;
                 }
                 
