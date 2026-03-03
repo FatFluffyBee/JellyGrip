@@ -4,7 +4,14 @@ using UnityEngine;
 public class Eel : MonoBehaviour
 {
     [SerializeField] private ParticleSystem attackSignPS;
-    [SerializeField] private Transform eelBody;
+    [SerializeField] private Transform eelHead;
+    [SerializeField] private SpriteRenderer eelBodySR;
+    [SerializeField] private SpriteRenderer eelHeadSR;
+    [SerializeField] private BoxCollider2D detectionCollider;
+    [SerializeField] private BoxCollider2D bodyCollider;
+
+    [SerializeField] private Sprite idleHeadSprite;
+    [SerializeField] private Sprite attackHeadSprite;
     
     [Header("Attacks")]
     [SerializeField] private float warningDuration;
@@ -24,18 +31,27 @@ public class Eel : MonoBehaviour
     public enum State {Idle, Warning, Attacking, Staying, Retracting, Cooldown};
     private Vector3 startPos;
     private Vector3 endPos;
+    private Vector3 bodyStartPos;
     
     private bool targetDetected = false;
 
-    private void Start()
+    private void OnValidate()
     {
-        startPos = eelBody.position;
-        endPos = startPos + eelBody.up * attackRange;
+        UpdateEelDetectionCollider();
     }
 
-    private void FixedUpdate()
+    private void Start()
+    {
+        startPos = eelHead.position;
+        endPos = startPos + eelHead.up * attackRange;
+        bodyStartPos = startPos - eelHead.up / 2f;;
+    }
+
+    private void Update()
     {
         ProcessState();
+        UpdateEelBodySprite();
+        UpdateEelBodyCollider();
     }
 
     private void ProcessState()
@@ -52,6 +68,7 @@ public class Eel : MonoBehaviour
                     currentState = State.Warning;
                     attackSignPS.Play();
                     timer = 0f;
+                    SwapHeadSprite(true);
                 }
                 
                 break;
@@ -68,7 +85,7 @@ public class Eel : MonoBehaviour
             case State.Attacking:
                 t = timer / attackDuration;
                 t = 1f - Mathf.Pow(2f, -10f * t);
-                eelBody.position = (Vector3.Lerp(startPos, endPos, t));
+                eelHead.position = Vector3.Lerp(startPos, endPos, t);
                 if(timer >= attackDuration)
                 {
                     Debug.Log("Attack over, staying");
@@ -83,13 +100,14 @@ public class Eel : MonoBehaviour
                     Debug.Log("Stay over, retracting");
                     currentState = State.Retracting;
                     timer = 0f;
+                    SwapHeadSprite(false);
                 }
                 break;
 
             case State.Retracting:
                 t = timer / retractDuration;
                 t = 0.5f * (1f - Mathf.Cos(Mathf.PI * t)); 
-                eelBody.position = (Vector3.Lerp(endPos, startPos, t));
+                eelHead.position = Vector3.Lerp(endPos, startPos, t);
 
                 if(timer >= retractDuration)
                 {
@@ -112,11 +130,44 @@ public class Eel : MonoBehaviour
         targetDetected = false;
     }
 
+    private void UpdateEelBodySprite()
+    {
+        float width = Vector2.Distance(startPos, eelHead.position);
+        eelBodySR.size = new Vector2(width, eelBodySR.size.y);
+        eelBodySR.transform.position = bodyStartPos + eelHead.up * width / 2f;
+    }
+
+    private void UpdateEelDetectionCollider()
+    {
+        float yOffset = attackRange / 2f + 1f;
+        detectionCollider.offset = new Vector2(detectionCollider.offset.x, yOffset);
+        detectionCollider.size = new Vector2(detectionCollider.size.x, attackRange);
+    }
+
+    private void UpdateEelBodyCollider()
+    {
+        float width = Vector2.Distance(startPos, eelHead.position) + 0.8f;
+        float yOffset = - width / 2f + 0.4f;
+        bodyCollider.offset = new Vector2(bodyCollider.offset.x, yOffset);
+        bodyCollider.size = new Vector2(bodyCollider.size.x, width);
+    } 
+
+    private void SwapHeadSprite(bool isAttacking)
+    {
+        eelHeadSR.sprite = isAttacking ? attackHeadSprite : idleHeadSprite;
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if(collision.CompareTag("Player")) //! make more generic
         {
             targetDetected = true;
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawLine(transform.position, transform.position + eelHead.up * (attackRange + 1f));
     }
 }
