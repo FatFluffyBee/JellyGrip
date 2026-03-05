@@ -13,7 +13,12 @@ public class Eel : MonoBehaviour
     [SerializeField] private Sprite idleHeadSprite;
     [SerializeField] private Sprite attackHeadSprite;
     
+    [SerializeField] private AudioAssetSO eelWarningAudio;
+    [SerializeField] private AudioAssetSO eelAttackAudio;
+
+
     [Header("Attacks")]
+    
     [SerializeField] private float warningDuration;
 
     [SerializeField] private float attackDuration;
@@ -23,7 +28,7 @@ public class Eel : MonoBehaviour
     
     [SerializeField] private float retractDuration;
 
-    [SerializeField] private float attackCdDuration;
+    [SerializeField] private float cooldownDuration;
 
     private float timer;
     public State currentState = State.Idle;
@@ -69,6 +74,7 @@ public class Eel : MonoBehaviour
                     attackSignPS.Play();
                     timer = 0f;
                     SwapHeadSprite(true);
+                    AudioManager.Instance.PlayOneShot(eelWarningAudio);
                 }
                 
                 break;
@@ -79,6 +85,7 @@ public class Eel : MonoBehaviour
                     Debug.Log("Warning over, attacking");
                     currentState = State.Attacking;
                     timer = 0f;
+                    AudioManager.Instance.PlayOneShot(eelAttackAudio);
                 }
                 break;
 
@@ -118,7 +125,7 @@ public class Eel : MonoBehaviour
                 break;
 
             case State.Cooldown:
-                if(timer >= attackCdDuration)
+                if(timer >= cooldownDuration)
                 {
                     Debug.Log("Cooldown over, idle");
                     currentState = State.Idle;
