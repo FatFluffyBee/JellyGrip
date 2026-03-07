@@ -1,19 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//! it's a bit weird cause act as a buffer between movement and IPushable
+//It might be good for movement to add a small queue of movement impulse that get cleared after
 public class Knockback : MonoBehaviour, IMoveGiver
 {
     private Vector3 currentKnockback;
 
     private List<MoveInput> moveInputs = new List<MoveInput>();
 
-    public void Apply(Vector3 colPoint, float knockbackForce)
+    public void Apply(Vector3 dir, float knockbackForce)
     {
-        Vector3 knockBackDir = (transform.position - colPoint).normalized;
-        knockBackDir.ToV2Dir();
-        knockBackDir *= knockbackForce;
-
-        currentKnockback += knockBackDir;
+        
+        currentKnockback += dir * knockbackForce;
     }
 
     public List<MoveInput> GetDesiredMovement()

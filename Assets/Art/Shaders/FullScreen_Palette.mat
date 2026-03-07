@@ -38,8 +38,8 @@ Material:
     m_Ints: []
     m_Floats: []
     m_Colors:
-    - _ContrastColor: {r: 1, g: 0, b: 0, a: 1}
-    - _EmptyColor: {r: 0.3018868, g: 0.2947668, b: 0.2947668, a: 1}
-    - _FullColor: {r: 1, g: 1, b: 1, a: 0}
+    - _ContrastColor: {r: 0.10617697, g: 1, b: 0, a: 1}
+    - _EmptyColor: {r: 0.38679248, g: 0.0018244971, b: 0.073291, a: 1}
+    - _FullColor: {r: 0, g: 0.87161016, b: 1, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

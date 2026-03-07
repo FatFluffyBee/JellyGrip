@@ -49,7 +49,9 @@ public class Eel : MonoBehaviour
     {
         startPos = eelHead.position;
         endPos = startPos + eelHead.up * attackRange;
-        bodyStartPos = startPos - eelHead.up / 2f;;
+        bodyStartPos = startPos - eelHead.up / 2f;
+
+        GetComponentInChildren<CollisionForwarder>().OnCollision += ManageCollision;
     }
 
     private void Update()
@@ -69,7 +71,7 @@ public class Eel : MonoBehaviour
             case State.Idle:
                 if(targetDetected)
                 {
-                    Debug.Log("Target detected, starting attack");
+                    //Debug.Log("Target detected, starting attack");
                     currentState = State.Warning;
                     attackSignPS.Play();
                     timer = 0f;
@@ -82,7 +84,7 @@ public class Eel : MonoBehaviour
             case State.Warning:
                 if(timer >= warningDuration)
                 {
-                    Debug.Log("Warning over, attacking");
+                    //Debug.Log("Warning over, attacking");
                     currentState = State.Attacking;
                     timer = 0f;
                     AudioManager.Instance.PlayOneShot(eelAttackAudio);
@@ -95,7 +97,7 @@ public class Eel : MonoBehaviour
                 eelHead.position = Vector3.Lerp(startPos, endPos, t);
                 if(timer >= attackDuration)
                 {
-                    Debug.Log("Attack over, staying");
+                    //Debug.Log("Attack over, staying");
                     currentState = State.Staying;
                     timer = 0f;
                 }
@@ -104,7 +106,7 @@ public class Eel : MonoBehaviour
             case State.Staying:
                 if(timer >= stayDuration)
                 {
-                    Debug.Log("Stay over, retracting");
+                    //Debug.Log("Stay over, retracting");
                     currentState = State.Retracting;
                     timer = 0f;
                     SwapHeadSprite(false);
@@ -118,7 +120,7 @@ public class Eel : MonoBehaviour
 
                 if(timer >= retractDuration)
                 {
-                    Debug.Log("Retract over, cooldown");
+                    //Debug.Log("Retract over, cooldown");
                     currentState = State.Cooldown;
                     timer = 0f;
                 }
@@ -127,7 +129,7 @@ public class Eel : MonoBehaviour
             case State.Cooldown:
                 if(timer >= cooldownDuration)
                 {
-                    Debug.Log("Cooldown over, idle");
+                    //Debug.Log("Cooldown over, idle");
                     currentState = State.Idle;
                     timer = 0f;
                 }
@@ -166,9 +168,28 @@ public class Eel : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.CompareTag("Player")) //! make more generic
+        if(collision.GetComponent<TriggerTarget>() != null) 
         {
             targetDetected = true;
+        }
+    }
+
+    private void ManageCollision(Collision2D collision)
+    {
+        IPushable pushable = collision.collider.GetComponent<IPushable>();
+        if(pushable != null)
+        {
+            Vector3 hitPoint = collision.GetContact(0).point;
+            Vector3 pushDirection = collision.collider.transform.position - hitPoint;
+            pushDirection.ToV2Dir();
+
+            pushable.Push(pushDirection, 50f);
+        }
+
+        IDamageable damageable = collision.collider.GetComponent<IDamageable>();
+        if(damageable != null)
+        {
+            damageable.TakeDamage(1);
         }
     }
 

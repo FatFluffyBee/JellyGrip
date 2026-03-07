@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: c64763bb691751840979e182828ff57a
+guid: d47c6cdd740c2924787b642369c0abe5
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7567100410245518502
-    second: Eel_Head_Normal_0
+      213: 1286166686901740332
+    second: Jelly_BlackBG_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,12 +126,12 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Eel_Head_Normal_0
+      name: Jelly_BlackBG_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 1
         y: 3
-        width: 13
+        width: 14
         height: 11
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a5b6a93e4424cf690800000000000000
-      internalID: -7567100410245518502
+      spriteID: c2328be89c169d110800000000000000
+      internalID: 1286166686901740332
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Eel_Head_Normal_0: -7567100410245518502
+      Jelly_BlackBG_0: 1286166686901740332
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

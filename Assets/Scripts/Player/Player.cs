@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour, IPushable, IDamageable
 {
     private HealthSystem hs;
     private Movement movement;
@@ -17,12 +17,13 @@ public class Player : MonoBehaviour
         movement.AddMovementSource(knockback);
     }
 
-    void OnCollisionEnter2D(Collision2D col)
+    public void Push(Vector3 direction, float force)
     {
-        if(col.collider.CompareTag("Ennemi"))
-        {
-            hs.TakeDamage(1);
-            knockback.Apply((Vector3)col.GetContact(0).point, knockbackForce);
-        }
+        knockback.Apply(direction, force);
+    }
+
+    public void TakeDamage(int damage)
+    {
+        hs.TakeDamage(damage);
     }
 }
