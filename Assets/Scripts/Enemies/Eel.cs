@@ -8,7 +8,7 @@ public class Eel : MonoBehaviour
     [SerializeField] private SpriteRenderer eelBodySR;
     [SerializeField] private SpriteRenderer eelHeadSR;
     [SerializeField] private BoxCollider2D detectionCollider;
-    [SerializeField] private BoxCollider2D bodyCollider;
+    [SerializeField] private CapsuleCollider2D bodyCollider;
 
     [SerializeField] private Sprite idleHeadSprite;
     [SerializeField] private Sprite attackHeadSprite;
@@ -23,6 +23,9 @@ public class Eel : MonoBehaviour
 
     [SerializeField] private float attackDuration;
     [SerializeField] private float attackRange;
+    [SerializeField] private float knockbackForce;
+    [SerializeField] private float upwardKnockbackForce;
+    [SerializeField] private float backwardKnockbackForce;
 
     [SerializeField] private float stayDuration;
     
@@ -51,7 +54,7 @@ public class Eel : MonoBehaviour
         endPos = startPos + eelHead.up * attackRange;
         bodyStartPos = startPos - eelHead.up / 2f;
 
-        GetComponentInChildren<CollisionForwarder>().OnCollision += ManageCollision;
+        GetComponentInChildren<CollisionForwarder>().OnCollisionEnter += ManageCollision;
     }
 
     private void Update()
@@ -166,7 +169,7 @@ public class Eel : MonoBehaviour
         eelHeadSR.sprite = isAttacking ? attackHeadSprite : idleHeadSprite;
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerStay2D(Collider2D collision)
     {
         if(collision.GetComponent<TriggerTarget>() != null) 
         {
@@ -179,11 +182,22 @@ public class Eel : MonoBehaviour
         IPushable pushable = collision.collider.GetComponent<IPushable>();
         if(pushable != null)
         {
-            Vector3 hitPoint = collision.GetContact(0).point;
-            Vector3 pushDirection = collision.collider.transform.position - hitPoint;
-            pushDirection.ToV2Dir();
+            Vector3 pushDirection = Vector2.Dot(collision.GetContact(0).normal, transform.right) > 0 ? -transform.right : transform.right;
+            Vector3 pushForce = pushDirection * knockbackForce;
 
-            pushable.Push(pushDirection, 50f);
+            if(currentState == State.Attacking)
+            {
+                pushForce += transform.up * upwardKnockbackForce;
+            } 
+            else if (currentState == State.Retracting)
+            {
+                pushForce -= transform.up * backwardKnockbackForce;
+            }
+
+            Vector3 hitPoint = collision.GetContact(0).point;
+            Debug.DrawLine(hitPoint, hitPoint + pushForce, Color.red, 5f);
+
+            pushable.Push(pushForce);
         }
 
         IDamageable damageable = collision.collider.GetComponent<IDamageable>();

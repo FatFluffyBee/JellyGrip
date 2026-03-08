@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: -1196627112166561382}
   - component: {fileID: -4452149603783509316}
   - component: {fileID: 8353195438449816597}
+  - component: {fileID: -4989495503557191496}
   m_Layer: 7
   m_Name: GrabHead
   m_TagString: Tentacle
@@ -128,6 +129,18 @@ MonoBehaviour:
   sR: {fileID: 7760720889932048047}
   baseSprite: {fileID: 21300000, guid: fa76a07e48f34a84e9ec05cfcfbbcda6, type: 3}
   selectedSprite: {fileID: 21300000, guid: 8f274a50d2db9bc458e84055ace12ef5, type: 3}
+--- !u!114 &-4989495503557191496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186510448984504905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ce912b477eb6d74588e11247814929e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3742876898357780425
 GameObject:
   m_ObjectHideFlags: 0

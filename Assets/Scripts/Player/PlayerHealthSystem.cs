@@ -12,7 +12,10 @@ public class PlayerHealthSystem : HealthSystem
     public override void TakeDamage(int damage)
     {
         if(isInvulnerable)
+        {
+            RaiseOnHit();
             return;
+        }
 
         base.TakeDamage(damage);
         TriggerInvulnerability();

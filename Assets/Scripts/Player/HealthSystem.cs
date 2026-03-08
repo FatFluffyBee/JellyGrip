@@ -8,15 +8,20 @@ public class HealthSystem : MonoBehaviour
     private int currentHealth;
     public event Action OnDeath;
     public event Action OnHit;
+    public event Action OnDamage;
 
     private void Start()
     {
         currentHealth = maxHealth;   
         UpdateHealthVisuals(currentHealth);
+        OnHit += () => Debug.Log("Hit taken, current health: " + currentHealth);
     }
 
     public virtual void TakeDamage(int damage)
     {
+        OnHit?.Invoke();
+        OnDamage?.Invoke();
+
         currentHealth -= damage;
 
         if(currentHealth <= 0)
@@ -27,7 +32,7 @@ public class HealthSystem : MonoBehaviour
             return;
         }
 
-        OnHit?.Invoke();
+        
         UpdateHealthVisuals(currentHealth);
     }
 
@@ -46,5 +51,10 @@ public class HealthSystem : MonoBehaviour
     protected virtual void UpdateHealthVisuals(int health)
     {
         
+    }
+
+    protected void RaiseOnHit() //! might not be needed with delegate, investigate when time
+    {
+        OnHit?.Invoke();
     }
 }

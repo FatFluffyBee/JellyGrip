@@ -36,8 +36,8 @@ public class LightBulb : MonoBehaviour, IGrabbable, IPushable
         rb.AddForce(grabberVelocity, ForceMode2D.Impulse);
     }
 
-    public void Push(Vector3 direction, float force)
+    public void Push(Vector3 pushForce)
     {
-        rb.AddForce(direction * force, ForceMode2D.Impulse);
+        rb.AddForce(pushForce, ForceMode2D.Impulse);
     }
 }

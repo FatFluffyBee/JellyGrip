@@ -216,6 +216,7 @@ GameObject:
   - component: {fileID: 430192975116315943}
   - component: {fileID: 7468179844699784460}
   - component: {fileID: -8278194179682747207}
+  - component: {fileID: 540566145562134931}
   m_Layer: 7
   m_Name: LanternHead
   m_TagString: Tentacle
@@ -359,3 +360,15 @@ MonoBehaviour:
   sR: {fileID: 4788920715664483443}
   baseSprite: {fileID: 21300000, guid: 0ce6b01846b88d44690dee2f0d34b1f8, type: 3}
   selectedSprite: {fileID: 21300000, guid: c73bcaf236ff053468cde41e516ced0d, type: 3}
+--- !u!114 &540566145562134931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7644811421491003815}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ce912b477eb6d74588e11247814929e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

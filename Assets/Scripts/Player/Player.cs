@@ -17,9 +17,9 @@ public class Player : MonoBehaviour, IPushable, IDamageable
         movement.AddMovementSource(knockback);
     }
 
-    public void Push(Vector3 direction, float force)
+    public void Push(Vector3 pushForce)
     {
-        knockback.Apply(direction, force);
+        knockback.Apply(pushForce);
     }
 
     public void TakeDamage(int damage)

@@ -100,6 +100,7 @@ GameObject:
   - component: {fileID: 7576592308301404895}
   - component: {fileID: 8684887746403579810}
   - component: {fileID: -2468275291156433180}
+  - component: {fileID: -4612214331870744289}
   m_Layer: 7
   m_Name: MoveHead
   m_TagString: Tentacle
@@ -215,6 +216,18 @@ MonoBehaviour:
   sR: {fileID: 2342161392992479650}
   baseSprite: {fileID: 21300000, guid: 1720cf6d885a29e46a001b32d68ac87a, type: 3}
   selectedSprite: {fileID: 21300000, guid: 9d2b8bd255cde374ca6cdc70c912e8eb, type: 3}
+--- !u!114 &-4612214331870744289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4423956220550280420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ce912b477eb6d74588e11247814929e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &9008774991711894486
 GameObject:
   m_ObjectHideFlags: 0

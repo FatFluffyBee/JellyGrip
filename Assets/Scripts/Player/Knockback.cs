@@ -9,10 +9,9 @@ public class Knockback : MonoBehaviour, IMoveGiver
 
     private List<MoveInput> moveInputs = new List<MoveInput>();
 
-    public void Apply(Vector3 dir, float knockbackForce)
+    public void Apply(Vector3 pushForce)
     {
-        
-        currentKnockback += dir * knockbackForce;
+        currentKnockback += pushForce;
     }
 
     public List<MoveInput> GetDesiredMovement()
