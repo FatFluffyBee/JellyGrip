@@ -49,6 +49,7 @@ public abstract class Tentacle : MonoBehaviour
     protected bool forceRetract = false;
     protected bool applyForces = true;
     protected bool hasReachMaxRange = false;
+    protected bool stopMovement = false;
 
     protected Vector3 shootDir;
     protected Vector3 targetDir;
@@ -76,6 +77,8 @@ public abstract class Tentacle : MonoBehaviour
     public event Action OnTentacleDestroyed;
     public event Action<Tentacle> OnForceRetract;
 
+    public Vector2 HeadPosition => tentacleHead.position;
+
     public virtual void TryExpand(){}
 
     public virtual void TryRetract() {}
@@ -98,6 +101,9 @@ public abstract class Tentacle : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if(stopMovement)
+            return;
+
         Vector3 nextHeadPos = ComputeNextHeadPosAndDirFromForces();
 
         if(isRetracting || forceRetract)
