@@ -4,9 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Movement : MonoBehaviour, IMoveReceiver
 {
-    //for test purpose only
-    
-
+    //! add a queue of impulse that get cleared after being applied, so that knockback can be added without a compoenent (archi ok?)
     [Header("Constraints")]
     [SerializeField] private DecayMode decayMode;
     [SerializeField] private float velocityDecayRate;

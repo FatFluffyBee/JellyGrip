@@ -122,7 +122,7 @@ public class MoveTentacle : Tentacle
 
     public void OnInitialWallHitFeedback(CollisionInfo colInfo)
     {
-        AudioManager.Instance.PlayOneShot(tentacleHitWall);
+        AudioManager.Instance.PlayOneShot(tentacleHitWallAudio);
         ParticleSystem fxInstance = Instantiate(
             wallHitFX, 
             colInfo.spawnPointFX.position, 

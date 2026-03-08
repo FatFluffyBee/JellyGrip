@@ -214,7 +214,6 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
 
     public void DisconnectTentacle(Tentacle toRemoveTentacle)
     {
-        Debug.Log("Disconnecting Tentacle");
         if(tentacles.Contains(toRemoveTentacle));
         {
             tentacles.Remove(toRemoveTentacle);
