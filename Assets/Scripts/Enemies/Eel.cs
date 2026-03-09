@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class Eel : MonoBehaviour
+public class Eel : MonoBehaviour, IRetractHookCondition
 {
     [SerializeField] private ParticleSystem attackSignPS;
     [SerializeField] private Transform eelHead;
@@ -15,7 +15,6 @@ public class Eel : MonoBehaviour
     
     [SerializeField] private AudioAssetSO eelWarningAudio;
     [SerializeField] private AudioAssetSO eelAttackAudio;
-
 
     [Header("Attacks")]
     
@@ -62,6 +61,21 @@ public class Eel : MonoBehaviour
         ProcessState();
         UpdateEelBodySprite();
         UpdateEelBodyCollider();
+    }
+
+     public bool ShouldRetractHook (Vector3 hookPos)
+    {
+        if(currentState == State.Retracting)
+        {
+            Vector3 localHookPos = transform.InverseTransformPoint(hookPos);
+            Debug.Log($"Hook local position: {localHookPos}");
+            Debug.DrawLine(hookPos, transform.position, Color.yellow);
+            if(localHookPos.y <= 0)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void ProcessState()

@@ -51,6 +51,7 @@ MonoBehaviour:
   maxAnglePerSecond: 10
   retractSpeed: 30
   lengthBeforeDelete: 0.3
+  canTouchDangerouseSurface: 1
   maxTentacleRange: 5
   autoRetractOnRangeReach: 1
   wiggleSpeed: 2
@@ -67,7 +68,7 @@ MonoBehaviour:
   shakeDuration: 0.3
   shakeIntensity: 0.1
   shakeFrequency: 1
-  retractWhenOnTarget: 1
+  retractWhenOnTarget: 0
   targetReachDistance: 0.5
   initialPullStrenght: 6
   maxPullStrenght: 15

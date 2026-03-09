@@ -64,6 +64,8 @@ public class MoveTentacle : Tentacle
     {
         base.ForceRetract();
         isGrabbing = false;
+        stopMovement = false;
+        tentacleHead.transform.SetParent(null);
     }
 
     public override List<MoveInput> GetDesiredMovement()
@@ -98,14 +100,20 @@ public class MoveTentacle : Tentacle
 
     public override void HandleHeadCollision(CollisionInfo colInfo)
     {
-        Collision2D collision = colInfo.collision2D;
+        HookAnchor hookAnchor = colInfo.collision2D.collider.GetComponent<HookAnchor>();
 
-        if(collision.transform.CompareTag("Wall"))
+        if(!isGrabbing)
         {
-            if(!isGrabbing)
+            if(hookAnchor != null && !forceRetract)
             {
+                //more of an assurance to not grab for one frame and trigger sound and fx
+                if(hookAnchor.IsDanger && !canTouchDangerouseSurface)
+                    return;
+
                 OnInitialWallHitFeedback(colInfo);
                 StartGrabState();
+                hookAnchor.AttachTentacle(this);
+                tentacleHead.transform.SetParent(hookAnchor.FollowableParent);
             }
         }
     }
@@ -118,6 +126,7 @@ public class MoveTentacle : Tentacle
         canExpand = false;
         wiggleAmplitude /= 2f;
         maxTentacleRange = maxRangeWhenGrabbing;
+        stopMovement = true;
     }
 
     public void OnInitialWallHitFeedback(CollisionInfo colInfo)

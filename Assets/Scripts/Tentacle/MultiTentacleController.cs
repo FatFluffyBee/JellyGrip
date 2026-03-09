@@ -20,9 +20,12 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
     [SerializeField] public SelectionMode retractSelectionMode;
     [SerializeField] public bool retractTentacleIfLimitReached;
 
+    [Header("Dangerous Surface")]
+    [SerializeField] private bool damagePlayerOnDangerousSurfaceTentacleTouch= false;
+
 
     private bool primaryFireStarted = false;
-    private bool blockRetractationUntilRelease = false;
+    //private bool blockRetractationUntilRelease = false;
 
     private List<Tentacle> tentacles = new List<Tentacle>();
     private int tentacleIndex = 0;
@@ -98,6 +101,7 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
         Tentacle tentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
         tentacle.InitializeTentacle(launchPos, aimDirFromBody);
         tentacle.OnForceRetract += DisconnectTentacle;
+        tentacle.OnTouchingDanger += DamagePlayer;
         tentacles.Add(tentacle);
     }
 
@@ -214,7 +218,7 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
 
     public void DisconnectTentacle(Tentacle toRemoveTentacle)
     {
-        if(tentacles.Contains(toRemoveTentacle));
+        if(tentacles.Contains(toRemoveTentacle))
         {
             tentacles.Remove(toRemoveTentacle);
         }
@@ -317,6 +321,14 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
         }
         
         return tentacles[index];
+    }
+
+    private void DamagePlayer()
+    {
+        if(damagePlayerOnDangerousSurfaceTentacleTouch)
+        {
+            hs.TakeDamage(1);
+        }
     }
 }
 

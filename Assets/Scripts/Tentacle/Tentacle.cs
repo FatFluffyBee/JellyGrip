@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class Tentacle : MonoBehaviour
@@ -14,6 +15,9 @@ public abstract class Tentacle : MonoBehaviour
     [Header("Retract")]
     [SerializeField] protected float retractSpeed;
     [SerializeField] protected float lengthBeforeDelete = 0.5f;
+
+    [Header("Collision")]
+    [SerializeField] protected bool canTouchDangerouseSurface;
 
     [Header("Range")]
     [SerializeField] protected float maxTentacleRange = 5f;
@@ -41,7 +45,6 @@ public abstract class Tentacle : MonoBehaviour
     [SerializeField] protected float shakeIntensity;
     [SerializeField] protected float shakeFrequency;
 
-
     protected bool canExpand = true;
     protected bool isExpanding = false;
     protected bool forceExpand = false;
@@ -49,6 +52,7 @@ public abstract class Tentacle : MonoBehaviour
     protected bool forceRetract = false;
     protected bool applyForces = true;
     protected bool hasReachMaxRange = false;
+    protected bool stopMovement = false;
 
     protected Vector3 shootDir;
     protected Vector3 targetDir;
@@ -75,6 +79,9 @@ public abstract class Tentacle : MonoBehaviour
 
     public event Action OnTentacleDestroyed;
     public event Action<Tentacle> OnForceRetract;
+    public event Action OnTouchingDanger;
+
+    public Vector2 HeadPosition => tentacleHead.position;
 
     public virtual void TryExpand(){}
 
@@ -98,6 +105,9 @@ public abstract class Tentacle : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if(stopMovement)
+            return;
+
         Vector3 nextHeadPos = ComputeNextHeadPosAndDirFromForces();
 
         if(isRetracting || forceRetract)
@@ -480,6 +490,15 @@ public abstract class Tentacle : MonoBehaviour
     public void OnDeselected()
     {
         headVisuals.SetSelected(false);
+    }
+
+    public void OnDangerousSurfaceCollision()
+    {
+        if(canTouchDangerouseSurface)
+            return;
+
+        ForceRetract();
+        OnTouchingDanger?.Invoke();
     }
 
 

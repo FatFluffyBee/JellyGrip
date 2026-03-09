@@ -1,6 +1,7 @@
 using UnityEngine;
+using System;
 
-public class TentacleHead : MonoBehaviour, IMoveReceiver
+public class TentacleHead : MonoBehaviour, IMoveReceiver, IDamageable
 {
     private Tentacle owner;
     [SerializeField] private Transform spawnFxPoint;
@@ -29,6 +30,11 @@ public class TentacleHead : MonoBehaviour, IMoveReceiver
     public void DisableCollider()
     {
         GetComponent<Collider2D>().enabled = false;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        owner.OnDangerousSurfaceCollision();
     }
 }
 
