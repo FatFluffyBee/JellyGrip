@@ -9,6 +9,7 @@ TagManager:
   - Light
   - Ennemi
   - Tentacle
+  - Enemi
   layers:
   - Default
   - TransparentFX

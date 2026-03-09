@@ -6,8 +6,6 @@ public class Player : MonoBehaviour, IPushable, IDamageable
     private Movement movement;
     private Knockback knockback;
 
-    [SerializeField] private float knockbackForce = 10f;
-
     private void Awake()
     {
         hs = GetComponent<HealthSystem>();

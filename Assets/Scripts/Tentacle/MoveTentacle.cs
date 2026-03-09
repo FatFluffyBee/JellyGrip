@@ -104,8 +104,12 @@ public class MoveTentacle : Tentacle
 
         if(!isGrabbing)
         {
-            if(hookAnchor != null)
+            if(hookAnchor != null && !forceRetract)
             {
+                //more of an assurance to not grab for one frame and trigger sound and fx
+                if(hookAnchor.IsDanger && !canTouchDangerouseSurface)
+                    return;
+
                 OnInitialWallHitFeedback(colInfo);
                 StartGrabState();
                 hookAnchor.AttachTentacle(this);

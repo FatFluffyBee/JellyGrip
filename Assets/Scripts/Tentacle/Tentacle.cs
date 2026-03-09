@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class Tentacle : MonoBehaviour
@@ -14,6 +15,9 @@ public abstract class Tentacle : MonoBehaviour
     [Header("Retract")]
     [SerializeField] protected float retractSpeed;
     [SerializeField] protected float lengthBeforeDelete = 0.5f;
+
+    [Header("Collision")]
+    [SerializeField] protected bool canTouchDangerouseSurface;
 
     [Header("Range")]
     [SerializeField] protected float maxTentacleRange = 5f;
@@ -40,7 +44,6 @@ public abstract class Tentacle : MonoBehaviour
     [SerializeField] protected float shakeDuration;
     [SerializeField] protected float shakeIntensity;
     [SerializeField] protected float shakeFrequency;
-
 
     protected bool canExpand = true;
     protected bool isExpanding = false;
@@ -76,6 +79,7 @@ public abstract class Tentacle : MonoBehaviour
 
     public event Action OnTentacleDestroyed;
     public event Action<Tentacle> OnForceRetract;
+    public event Action OnTouchingDanger;
 
     public Vector2 HeadPosition => tentacleHead.position;
 
@@ -486,6 +490,15 @@ public abstract class Tentacle : MonoBehaviour
     public void OnDeselected()
     {
         headVisuals.SetSelected(false);
+    }
+
+    public void OnDangerousSurfaceCollision()
+    {
+        if(canTouchDangerouseSurface)
+            return;
+
+        ForceRetract();
+        OnTouchingDanger?.Invoke();
     }
 
 

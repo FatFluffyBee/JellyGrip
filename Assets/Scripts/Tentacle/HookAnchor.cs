@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class HookAnchor : MonoBehaviour
 {
-    [SerializeField] private bool isDanger = true;
+    [SerializeField] private bool isDanger = false;
     [SerializeField] private Transform followableParent;
 
     public bool IsDanger => isDanger;
@@ -18,6 +18,7 @@ public class HookAnchor : MonoBehaviour
         {
             followableParent = transform;
         }        
+
         retractCondition = GetComponentInParent<IRetractHookCondition>();
     }
 
@@ -69,5 +70,10 @@ public class HookAnchor : MonoBehaviour
         }
 
         attachedTentacles.Clear();
+    }
+
+    void OnDestroy()
+    {
+        RetractTentacles();
     }
 }
