@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class LightBulb : MonoBehaviour, IGrabbable, IPushable
+public class LightBulb : MonoBehaviour, IGrabbable
 {
     [SerializeField] private Animator animator;
     [SerializeField] private LightBehavior lightBehavior;
@@ -34,10 +34,5 @@ public class LightBulb : MonoBehaviour, IGrabbable, IPushable
         transform.parent = null;
         rb.bodyType = RigidbodyType2D.Dynamic;
         rb.AddForce(grabberVelocity, ForceMode2D.Impulse);
-    }
-
-    public void Push(Vector3 pushForce)
-    {
-        rb.AddForce(pushForce, ForceMode2D.Impulse);
     }
 }

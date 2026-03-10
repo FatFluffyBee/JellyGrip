@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MoveTentacle : Tentacle
+public class MoveTentacle : Tentacle, IMoveGiver
 {
     [Header("Auto Retract")]
     [SerializeField] private bool retractWhenOnTarget;
@@ -68,12 +68,13 @@ public class MoveTentacle : Tentacle
         tentacleHead.transform.SetParent(null);
     }
 
-    public override List<MoveInput> GetDesiredMovement()
+    public override List<MoveInput> CalculateMovementToGive(MoveReceiverData moveReceiverData)
     {
+        Vector3 moveReceiverPos = moveReceiverData.centerPoint;
         List<MoveInput> moveInputs = new List<MoveInput>();
         if(isGrabbing)
         {
-            Vector2 rootToHead = tentacleHead.position - root.position;
+            Vector2 rootToHead = tentacleHead.position - moveReceiverPos;
             Vector2 pullDir = rootToHead.normalized;
 
             if(firstImpact)
@@ -110,10 +111,15 @@ public class MoveTentacle : Tentacle
                 if(hookAnchor.IsDanger && !canTouchDangerouseSurface)
                     return;
 
-                OnInitialWallHitFeedback(colInfo);
+                FirstHitVisuals(colInfo);
                 StartGrabState();
                 hookAnchor.AttachTentacle(this);
                 tentacleHead.transform.SetParent(hookAnchor.FollowableParent);
+
+                if(hookAnchor.GetComponent<Movement>())
+                {
+                    hookAnchor.GetComponent<Movement>().AddMovementSource(this);
+                }
             }
         }
     }
@@ -129,7 +135,7 @@ public class MoveTentacle : Tentacle
         stopMovement = true;
     }
 
-    public void OnInitialWallHitFeedback(CollisionInfo colInfo)
+    public void FirstHitVisuals(CollisionInfo colInfo)
     {
         AudioManager.Instance.PlayOneShot(tentacleHitWallAudio);
         ParticleSystem fxInstance = Instantiate(

@@ -192,14 +192,14 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
         headSpriteSelection.sprite = tentacleHeadsSprite[tentacleIndex];
     }
 
-    public List<MoveInput> GetDesiredMovement()
+    public List<MoveInput> CalculateMovementToGive(MoveReceiverData moveReceiverData)
     {
         moveInputs.Clear();
         if(tentacles.Count > 0)
         {
             foreach(Tentacle e in tentacles)
             {
-                moveInputs.AddRange(e.GetDesiredMovement());
+                moveInputs.AddRange(e.CalculateMovementToGive(moveReceiverData));
             }
         }
    
