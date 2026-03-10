@@ -34,8 +34,11 @@ public class ParticleBounds2D : MonoBehaviour
             Vector2 worldPartPos = transform.TransformPoint(localPartPos);
 
             if (!polyCol.OverlapPoint(worldPartPos))
-            {
-                particles[i].remainingLifetime -= fadeSpeed * Time.deltaTime;
+            {   
+                float particuleDistPerFrame = particles[i].velocity.magnitude * Time.deltaTime;
+                float distanceFactor = 1 + particles[i].remainingLifetime;
+                distanceFactor *= distanceFactor;
+                particles[i].remainingLifetime -= fadeSpeed * particuleDistPerFrame * distanceFactor;
             }
         }
         ps.SetParticles(particles, numParticlesAlive);
