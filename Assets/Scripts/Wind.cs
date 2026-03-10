@@ -133,8 +133,8 @@ public class Wind : MonoBehaviour, IMoveGiver
 
         float particleSpeed = Mathf.Lerp(lowWindParticleSpeed, highWindParticleSpeed, lerpFactor);
         ParticleSystem.VelocityOverLifetimeModule vel = windParticles.velocityOverLifetime;
-        vel.x = new ParticleSystem.MinMaxCurve(windDirection.x * particleSpeed);
-        vel.y = new ParticleSystem.MinMaxCurve(windDirection.y * particleSpeed);
+        vel.x = new ParticleSystem.MinMaxCurve(windNormalDir.x * particleSpeed);
+        vel.y = new ParticleSystem.MinMaxCurve(windNormalDir.y * particleSpeed);
         
         float nParticle = Mathf.Lerp(lowWindParticleEmissionNumber, highWindParticleEmissionNumber, lerpFactor);
         ParticleSystem.EmissionModule emissionModule = windParticles.emission;
