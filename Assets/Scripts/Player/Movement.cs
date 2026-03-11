@@ -4,11 +4,13 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Movement : MonoBehaviour, IMoveReceiver
 {
-    //! add a queue of impulse that get cleared after being applied, so that knockback can be added without a compoenent (archi ok?)
     [Header("Constraints")]
     [SerializeField] private DecayMode decayMode;
     [SerializeField] private float velocityDecayRate;
     [SerializeField] private float maxSpeed;
+    
+    [SerializeField][Range(0, 5)][Tooltip("0 is no force applied, 1 is normal, 2 is doubled")]
+     private float forceModifier = 1f;
 
     [Header("Debug")]
     [SerializeField] private float debugIntensity;
@@ -37,24 +39,26 @@ public class Movement : MonoBehaviour, IMoveReceiver
 
     private MoveIntent GatherMoveGiverInput()
     {
+        MoveReceiverData moveReceiverData = new MoveReceiverData(transform.position);
+
         DisplayDebugLine(currentVelocity, Color.yellow);
 
         MoveIntent forces = new MoveIntent();
 
         foreach(IMoveGiver moveGiver in moveGivers)
         {
-            foreach(MoveInput e in moveGiver.GetDesiredMovement())
+            foreach(MoveInput e in moveGiver.CalculateMovementToGive(moveReceiverData))
             {
                 switch(e.moveType)
                 {
                     case MoveType.Acceleration:
                         DisplayDebugLine(e.input, Color.green);
-                        forces.acceleration += e.input;
+                        forces.acceleration += e.input * forceModifier;
                         break;
                     
                     case MoveType.Impulse:
                         DisplayDebugLine(e.input, Color.red);
-                        forces.velocity += e.input;
+                        forces.velocity += e.input * forceModifier;
                         break;
                 }
             }
@@ -127,4 +131,14 @@ public struct MoveInput
         this.input = input;
         this.moveType = moveType;
     }
+}
+
+public struct MoveReceiverData
+{
+    public MoveReceiverData(Vector2 centerPoint)
+    {
+        this.centerPoint = centerPoint;
+    }
+
+    public Vector2 centerPoint;
 }

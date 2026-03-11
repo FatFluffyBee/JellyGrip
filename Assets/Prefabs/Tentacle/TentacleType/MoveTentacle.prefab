@@ -68,9 +68,9 @@ MonoBehaviour:
   shakeDuration: 0.3
   shakeIntensity: 0.1
   shakeFrequency: 1
-  retractWhenOnTarget: 0
+  retractWhenOnTarget: 1
   targetReachDistance: 0.5
   initialPullStrenght: 6
   maxPullStrenght: 15
-  minPullStrength: 5
+  minPullStrength: 3
   maxRangeWhenGrabbing: 7

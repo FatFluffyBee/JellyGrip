@@ -14,24 +14,21 @@ public class MoveTentacle : Tentacle
     
     [SerializeField] private float maxRangeWhenGrabbing = 7;
 
-    private bool isGrabbing = false;
-    private bool firstImpact = true;
+    private bool isHooked = false;
 
-    public override void InitializeTentacle(Transform root, Vector3 targetDir)
-    {
-        base.InitializeTentacle(root, targetDir);
-        forceExpand = true;
-    }
+    private IMoveReceiver hookedObjectMoveReceiver;
+    private HookPull playerToHook;
+    private HookPull objectToPlayer;
 
     protected override void ApplyChildVisuals() //! first thing to refactor
     {
-        if(isGrabbing)
+        if(isHooked)
         {
             if(retractWhenOnTarget)
             {
                 if(Vector2.Distance(root.position, tentacleHead.position) < targetReachDistance)
                 {
-                    DestroyTentacle();
+                    ForceRetract();
                     return;
                 }
             }
@@ -49,7 +46,7 @@ public class MoveTentacle : Tentacle
 
     public override void TryExpand()
     {     
-        if(!isGrabbing && canExpand)
+        if(!isHooked && canExpand)
         {
             forceExpand = true;
         }
@@ -63,46 +60,26 @@ public class MoveTentacle : Tentacle
     public override void ForceRetract()
     {
         base.ForceRetract();
-        isGrabbing = false;
+        isHooked = false;
         stopMovement = false;
         tentacleHead.transform.SetParent(null);
-    }
 
-    public override List<MoveInput> GetDesiredMovement()
-    {
-        List<MoveInput> moveInputs = new List<MoveInput>();
-        if(isGrabbing)
+        if(playerToHook != null)
         {
-            Vector2 rootToHead = tentacleHead.position - root.position;
-            Vector2 pullDir = rootToHead.normalized;
-
-            if(firstImpact)
-            {
-                moveInputs.Add(new MoveInput(pullDir * initialPullStrenght, MoveType.Impulse));
-                firstImpact = false;
-            }
-
-            float pullForce = CalculatePullForce(rootToHead.magnitude);
-            moveInputs.Add(new MoveInput(pullDir * pullForce, MoveType.Acceleration));
+            ownerMoveReceiver.RemoveMovementSource(playerToHook);
         }
 
-        moveInputs.Add(new MoveInput(Vector3.zero, MoveType.Acceleration));
-        return moveInputs;
-    }
-
-    private float CalculatePullForce(float tentacleLength)
-    {
-        float force = Mathf.InverseLerp(targetReachDistance, maxRangeWhenGrabbing, tentacleLength);
-        force = 1 - (1 - force) * (1 - force) * (1 - force);
-        force = Mathf.Lerp(minPullStrength, maxPullStrenght, force);
-        return force;
+        if(objectToPlayer != null)
+        {
+            hookedObjectMoveReceiver.RemoveMovementSource(objectToPlayer);
+        }
     }
 
     public override void HandleHeadCollision(CollisionInfo colInfo)
     {
         HookAnchor hookAnchor = colInfo.collision2D.collider.GetComponent<HookAnchor>();
 
-        if(!isGrabbing)
+        if(!isHooked)
         {
             if(hookAnchor != null && !forceRetract)
             {
@@ -110,17 +87,36 @@ public class MoveTentacle : Tentacle
                 if(hookAnchor.IsDanger && !canTouchDangerouseSurface)
                     return;
 
-                OnInitialWallHitFeedback(colInfo);
-                StartGrabState();
+                FirstHitVisuals(colInfo);
+                StartHookState();
                 hookAnchor.AttachTentacle(this);
                 tentacleHead.transform.SetParent(hookAnchor.FollowableParent);
+
+                HookPullConfig config = new HookPullConfig
+                {
+                    initialPullForce = initialPullStrenght,
+                    maxConstantPullForce = maxPullStrenght,
+                    minConstantPullForce = minPullStrength,
+                    maxRangePull = maxRangeWhenGrabbing,
+                    minRangePull = targetReachDistance
+                };
+
+                playerToHook = new HookPull(root, tentacleHead, config);
+                ownerMoveReceiver.AddMovementSource(playerToHook);
+
+                hookedObjectMoveReceiver = hookAnchor.GetComponent<IMoveReceiver>();
+                if(hookedObjectMoveReceiver != null)
+                {
+                    objectToPlayer = new HookPull(hookAnchor.transform, root, config);
+                    hookAnchor.GetComponent<IMoveReceiver>().AddMovementSource(objectToPlayer);
+                }
             }
         }
     }
 
-    private void StartGrabState()
+    private void StartHookState()
     {
-        isGrabbing = true;
+        isHooked = true;
         applyForces = false;
         forceExpand = false;
         canExpand = false;
@@ -129,7 +125,7 @@ public class MoveTentacle : Tentacle
         stopMovement = true;
     }
 
-    public void OnInitialWallHitFeedback(CollisionInfo colInfo)
+    public void FirstHitVisuals(CollisionInfo colInfo)
     {
         AudioManager.Instance.PlayOneShot(tentacleHitWallAudio);
         ParticleSystem fxInstance = Instantiate(

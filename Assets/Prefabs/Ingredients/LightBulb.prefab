@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 6606580027964491438}
   - component: {fileID: -1731373437002745098}
   - component: {fileID: 8677901646316423271}
+  - component: {fileID: 2015507944803803333}
   m_Layer: 0
   m_Name: LightBulb
   m_TagString: Light
@@ -65,8 +66,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3e6eb14a5c3635459cd2566da3bc522, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  decayMode: 0
-  velocityDecayRate: 0
+  decayMode: 1
+  velocityDecayRate: 0.1
   maxSpeed: 3
   debugIntensity: 0
 --- !u!114 &5647145728858418996
@@ -171,6 +172,18 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
+--- !u!114 &2015507944803803333
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3219397822116790392}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86d45f2db3a9ce0439d6cbe822383ee4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4698730952893724310
 GameObject:
   m_ObjectHideFlags: 0

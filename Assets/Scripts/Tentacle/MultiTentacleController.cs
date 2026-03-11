@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandler
+public class MultiTentacleController : MonoBehaviour, IGameplayHandler
 {
-    [SerializeField] private Movement movement;
+    [SerializeField] private IMoveReceiver moveReceiver;
     [SerializeField] private HealthSystem hs;
 
     [Header("Tentacles")]
@@ -41,10 +41,6 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
     private void OnEnable()
     {
         hs.OnHit += RetractAllTentacles;
-        if(movement != null)
-        {
-            movement.AddMovementSource(this);
-        }
     }
 
     private void OnDisable()
@@ -55,6 +51,7 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
     private void Awake()
     {
         mainCam = Camera.main;
+        moveReceiver = GetComponentInParent<IMoveReceiver>();
     }
 
     void Start()
@@ -99,7 +96,7 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
     private void SpawnTentacle()
     {
         Tentacle tentacle = Instantiate(tentaclePrefabs[tentacleIndex], launchPos.position, Quaternion.identity).GetComponent<Tentacle>();
-        tentacle.InitializeTentacle(launchPos, aimDirFromBody);
+        tentacle.InitializeTentacle(launchPos, aimDirFromBody, moveReceiver);
         tentacle.OnForceRetract += DisconnectTentacle;
         tentacle.OnTouchingDanger += DamagePlayer;
         tentacles.Add(tentacle);
@@ -190,20 +187,6 @@ public class MultiTentacleController : MonoBehaviour, IMoveGiver, IGameplayHandl
 
         tentacleIndex = index;
         headSpriteSelection.sprite = tentacleHeadsSprite[tentacleIndex];
-    }
-
-    public List<MoveInput> GetDesiredMovement()
-    {
-        moveInputs.Clear();
-        if(tentacles.Count > 0)
-        {
-            foreach(Tentacle e in tentacles)
-            {
-                moveInputs.AddRange(e.GetDesiredMovement());
-            }
-        }
-   
-        return moveInputs;
     }
 
     public void RetractAllTentacles()

@@ -119,7 +119,7 @@ public class Wind : MonoBehaviour, IMoveGiver
         timer = 0f;
     }
 
-    public List<MoveInput> GetDesiredMovement()
+    public List<MoveInput> CalculateMovementToGive(MoveReceiverData moveReceiverData)
     {
         moveInputs.Clear();
         moveInputs.Add(new MoveInput(windDirection.normalized * currentWindSpeed, MoveType.Acceleration));

@@ -61,6 +61,7 @@ public abstract class Tentacle : MonoBehaviour
     private float tentacleLength;
     public bool IsDead {get; private set;}
     public Vector2 HeadPos => (Vector2)tentacleHead.position;
+    protected IMoveReceiver ownerMoveReceiver;
 
     protected List<Vector3> basePoses = new List<Vector3>();
     protected List<Vector3> targetPoses = new List<Vector3>(); //wiggled ones
@@ -103,7 +104,7 @@ public abstract class Tentacle : MonoBehaviour
         }
     }
 
-    private void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
         if(stopMovement)
             return;
@@ -158,7 +159,7 @@ public abstract class Tentacle : MonoBehaviour
         
     }
 
-    public virtual void InitializeTentacle(Transform root, Vector3 targetDir)
+    public virtual void InitializeTentacle(Transform root, Vector3 targetDir, IMoveReceiver moveReceiver)
     {
         this.targetDir = targetDir;
         shootDir = targetDir;
@@ -167,6 +168,7 @@ public abstract class Tentacle : MonoBehaviour
         tentacleHeadRb = tentacleHead.GetComponent<Rigidbody2D>();
         headVisuals = tentacleHead.GetComponent<HeadVisuals>();
         this.root = root;
+        ownerMoveReceiver = moveReceiver;
         
         tentacleHeadHandler = tentacleHead.GetComponent<TentacleHead>();
         tentacleHeadHandler.SetOwner(this);
@@ -187,13 +189,13 @@ public abstract class Tentacle : MonoBehaviour
         AudioManager.Instance.PlayOneShot(fireTentacleAudio);
     }
 
-    public virtual List<MoveInput> GetDesiredMovement()
+    public virtual List<MoveInput> CalculateMovementToGive(MoveReceiverData moveReceiverData)
     {
         moveInputs.Clear();
         return moveInputs;
     }
 
-    private Vector3 ComputeNextHeadPosAndDirFromForces()
+    private Vector3 ComputeNextHeadPosAndDirFromForces() //! this whole thing is just wrong, we should implement movement and give it velocity instead
     {
         Vector3 nextHeadPos = tentacleHead.position;
 
@@ -202,9 +204,10 @@ public abstract class Tentacle : MonoBehaviour
         {
             Vector3 velocityTotal = Vector3.zero;
             Vector3 impulseTotal = Vector3.zero;
+            MoveReceiverData moveReceiverData = new MoveReceiverData(root.position);
             foreach(IMoveGiver list in moveGivers)
             {
-                foreach(MoveInput e in list.GetDesiredMovement())
+                foreach(MoveInput e in list.CalculateMovementToGive(moveReceiverData))
                 {
                     if(e.moveType == MoveType.Acceleration)
                         velocityTotal += e.input;
