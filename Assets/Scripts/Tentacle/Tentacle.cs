@@ -61,6 +61,7 @@ public abstract class Tentacle : MonoBehaviour
     private float tentacleLength;
     public bool IsDead {get; private set;}
     public Vector2 HeadPos => (Vector2)tentacleHead.position;
+    protected IMoveReceiver ownerMoveReceiver;
 
     protected List<Vector3> basePoses = new List<Vector3>();
     protected List<Vector3> targetPoses = new List<Vector3>(); //wiggled ones
@@ -103,7 +104,7 @@ public abstract class Tentacle : MonoBehaviour
         }
     }
 
-    private void FixedUpdate()
+    protected virtual void FixedUpdate()
     {
         if(stopMovement)
             return;
@@ -158,7 +159,7 @@ public abstract class Tentacle : MonoBehaviour
         
     }
 
-    public virtual void InitializeTentacle(Transform root, Vector3 targetDir)
+    public virtual void InitializeTentacle(Transform root, Vector3 targetDir, IMoveReceiver moveReceiver)
     {
         this.targetDir = targetDir;
         shootDir = targetDir;
@@ -167,6 +168,7 @@ public abstract class Tentacle : MonoBehaviour
         tentacleHeadRb = tentacleHead.GetComponent<Rigidbody2D>();
         headVisuals = tentacleHead.GetComponent<HeadVisuals>();
         this.root = root;
+        ownerMoveReceiver = moveReceiver;
         
         tentacleHeadHandler = tentacleHead.GetComponent<TentacleHead>();
         tentacleHeadHandler.SetOwner(this);

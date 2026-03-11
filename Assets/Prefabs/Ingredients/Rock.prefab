@@ -169,6 +169,7 @@ MonoBehaviour:
   decayMode: 1
   velocityDecayRate: 1
   maxSpeed: 2
+  forceModifier: 0.1
   debugIntensity: 1
 --- !u!114 &4111836168702030208
 MonoBehaviour:

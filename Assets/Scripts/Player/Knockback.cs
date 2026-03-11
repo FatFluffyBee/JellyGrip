@@ -9,7 +9,7 @@ public class Knockback : MonoBehaviour, IMoveGiver, IPushable
 
     private void Awake()
     {
-        GetComponentInParent<Movement>().AddMovementSource(this);
+        GetComponentInParent<IMoveReceiver>()?.AddMovementSource(this);
     }
 
     public void Push(Vector3 pushForce)
